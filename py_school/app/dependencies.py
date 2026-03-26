@@ -16,7 +16,7 @@ serializer = URLSafeSerializer(SECRET_KEY)
 
 def get_settings(db: Session = Depends(get_db)):
     settings = db.query(SiteSetting).filter(SiteSetting.id == 1).first()
-    return settings
+    return settings or SiteSetting()
 
 def get_current_admin(request: Request):
     session_cookie = request.cookies.get("admin_session")
