@@ -1,0 +1,248 @@
+{% extends "public/base.html" %}
+
+{% block title %}
+{% if lang == 'en' %}{{ settings.hero_title_en or 'Bright Steps to the Future' }}{% elif lang == 'ru' %}{{ settings.hero_title_ru or 'Yarkie shagi v budushchee' }}{% else %}{{ settings.hero_title_uz or 'Denov tuman 2-son ixtisoslashtirilgan maktab-internati' }}{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="hero-premium min-vh-100 position-relative d-flex align-items-center overflow-hidden">
+    <div class="hero-bg-wrapper position-absolute top-0 start-0 w-100 h-100">
+        <div class="hero-overlay"></div>
+        {% if settings.hero_media_type == 'video' %}
+        <video class="hero-bg-media w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+            <source src="{{ settings.hero_media_path }}" type="video/mp4" />
+        </video>
+        {% else %}
+        <div class="hero-bg-image w-100 h-100 object-fit-cover" style="background-image: url('{{ settings.hero_media_path }}'); background-size: cover; background-position: center;"></div>
+        {% endif %}
+    </div>
+
+    <div class="container position-relative z-3 text-white">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-8 mx-auto text-center hero-content-box">
+                <div class="badge-premium mb-4">
+                    <span class="badge rounded-pill bg-white text-dark px-4 py-2 fs-6 fw-semibold shadow-sm">{{ t('home.hero.badge', "Rivojlanish va ta'lim markazi", 'Center of growth and education', 'Tsentr razvitiya i obrazovaniya') }}</span>
+                </div>
+                <h1 class="display-3 fw-bolder mb-4 hero-title" style="line-height: 1.2;">
+                    {% if lang == 'en' %}{{ settings.hero_title_en or 'Bright Steps to the Future' }}{% elif lang == 'ru' %}{{ settings.hero_title_ru or 'Yarkie shagi v budushchee' }}{% else %}{{ settings.hero_title_uz or 'Denov tuman 2-son ixtisoslashtirilgan maktab-internati' }}{% endif %}
+                </h1>
+                <p class="lead mb-5 fs-4 fw-light text-white-50 hero-subtitle">
+                    {% if lang == 'en' %}{{ settings.hero_subtitle_en or 'A place of education and upbringing' }}{% elif lang == 'ru' %}{{ settings.hero_subtitle_ru or 'Mesto obrazovaniya i vospitaniya' }}{% else %}{{ settings.hero_subtitle_uz or "Ta'lim va tarbiya maskani" }}{% endif %}
+                </p>
+                <div class="hero-buttons d-flex gap-4 justify-content-center flex-wrap">
+                    <a href="/about" class="btn btn-premium-primary btn-lg rounded-pill px-5 py-3 shadow-lg d-flex align-items-center">
+                        <span>{{ t('home.hero.learn_more', "Batafsil ma'lumot", 'Learn more', 'Uznat bolshe') }}</span>
+                        <i class="fas fa-arrow-right ms-3"></i>
+                    </a>
+                    <a href="/teachers" class="btn btn-premium-outline-light btn-lg rounded-pill px-5 py-3 d-flex align-items-center">
+                        <i class="fas fa-chalkboard-teacher me-3"></i>
+                        <span>{{ t('home.hero.teachers_btn', "Ustozlar", 'Teachers', 'Uchitelya') }}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="premium-stats py-6 position-relative z-1" style="background-color: var(--body-bg); margin-top: -50px;">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass-card text-center p-5 rounded-4 h-100 shadow-lg border-top border-4 border-primary">
+                    <div class="stat-icon mb-4 text-primary bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-chalkboard-teacher fs-2"></i>
+                    </div>
+                    <h2 class="display-5 fw-bold text-dark mb-2">{{ teachers_count }}</h2>
+                    <p class="text-muted fw-medium text-uppercase letter-spacing-1 mb-0">{{ t('home.stats.teachers', 'Malakali ustozlar', 'Qualified teachers', 'Kvalifitsirovannyye uchitelya') }}</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass-card text-center p-5 rounded-4 h-100 shadow-lg border-top border-4 border-warning">
+                    <div class="stat-icon mb-4 text-warning bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-bullhorn fs-2"></i>
+                    </div>
+                    <h2 class="display-5 fw-bold text-dark mb-2">{{ announcements_count }}</h2>
+                    <p class="text-muted fw-medium text-uppercase letter-spacing-1 mb-0">{{ t('home.stats.announcements', "Muhim e'lonlar", 'Important announcements', 'Vazhnyye obyavleniya') }}</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass-card text-center p-5 rounded-4 h-100 shadow-lg border-top border-4 border-success">
+                    <div class="stat-icon mb-4 text-success bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-layer-group fs-2"></i>
+                    </div>
+                    <h2 class="display-5 fw-bold text-dark mb-2">{{ departments_count }}</h2>
+                    <p class="text-muted fw-medium text-uppercase letter-spacing-1 mb-0">{{ t('home.stats.departments', "Faol bo'limlar", 'Active departments', 'Aktivnyye otdely') }}</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass-card text-center p-5 rounded-4 h-100 shadow-lg border-top border-4 border-info">
+                    <div class="stat-icon mb-4 text-info bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-newspaper fs-2"></i>
+                    </div>
+                    <h2 class="display-5 fw-bold text-dark mb-2">{{ news_count }}</h2>
+                    <p class="text-muted fw-medium text-uppercase letter-spacing-1 mb-0">{{ t('home.stats.news', 'Yangiliklar', 'News', 'Novosti') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-6 bg-light bg-gradient position-relative overflow-hidden">
+    <div class="container position-relative z-2">
+        <div class="row mb-5 align-items-end">
+            <div class="col-lg-8">
+                <span class="text-primary fw-bold text-uppercase letter-spacing-2 mb-2 d-block">{{ t('home.latest_news.eyebrow', 'Media va yangiliklar', 'Media and news', 'Media i novosti') }}</span>
+                <h2 class="display-5 fw-bolder mb-0">{{ t('home.latest_news.title', "So'nggi yangiliklar", 'Latest news', 'Posledniye novosti') }}</h2>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <a href="/news" class="btn btn-outline-primary rounded-pill px-4 py-2">{{ t('home.latest_news.all', "Barchasini ko'rish", 'View all', 'Smotret vse') }} <i class="fas fa-arrow-right ms-2"></i></a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for news in latest_news %}
+            <div class="col-lg-4 col-md-6">
+                <div class="news-card card border-0 bg-white rounded-4 overflow-hidden shadow-sm h-100">
+                    <div class="card-img-wrapper position-relative overflow-hidden" style="height: 240px;">
+                        {% if news.image_path %}
+                            {% if news.image_path.endswith('.mp4') or news.image_path.endswith('.webm') or news.image_path.endswith('.ogg') %}
+                            <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+                                <source src="{{ news.image_path }}" type="video/mp4" />
+                            </video>
+                            {% else %}
+                            <img src="{{ news.image_path }}" class="w-100 h-100 object-fit-cover" alt="News Image">
+                            {% endif %}
+                        {% else %}
+                        <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                            <i class="fas fa-newspaper text-muted fs-1"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-4">
+                        <h4 class="card-title fw-bold mb-3 text-dark">{{ ml(news, 'title') }}</h4>
+                        <div class="card-text text-muted mb-4">{{ (ml(news, 'content') or '')|striptags|truncate(120) }}</div>
+                        <a href="/news/{{ news.id }}" class="text-primary text-decoration-none fw-semibold">{{ t('home.latest_news.more', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-6 bg-white">
+    <div class="container">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-8">
+                <h2 class="display-6 fw-bolder mb-2">{{ t('home.announcements.title', "Muhim e'lonlar", 'Important announcements', 'Vazhnyye obyavleniya') }}</h2>
+                <p class="text-muted mb-0">{{ t('home.announcements.subtitle', "O'quvchilar va ota-onalar uchun dolzarb xabarlar", 'Current notices for students and parents', 'Aktualnyye soobshcheniya dlya uchashchikhsya i roditeley') }}</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="/announcements" class="btn btn-outline-warning rounded-pill px-4 py-2">{{ t('home.announcements.all', "Barcha e'lonlar", 'All announcements', 'Vse obyavleniya') }}</a>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for item in latest_announcements %}
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4">
+                        <span class="badge bg-warning text-dark rounded-pill mb-3 px-3 py-2">{{ t('home.announcements.badge', "E'lon", 'Announcement', 'Obyavleniye') }}</span>
+                        <h5 class="fw-bold mb-3">{{ ml(item, 'title') }}</h5>
+                        <p class="text-muted mb-4">{{ (ml(item, 'content') or '')|striptags|truncate(140) }}</p>
+                        <a href="/news/{{ item.id }}" class="text-warning fw-semibold text-decoration-none">{{ t('home.announcements.more', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not latest_announcements %}
+            <div class="col-12">
+                <div class="alert alert-light border rounded-4 text-muted mb-0">{{ t('home.announcements.empty', "Hozircha e'lonlar yo'q.", 'No announcements yet.', 'Obyavleniy poka net.') }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="py-6 bg-light">
+    <div class="container">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-8">
+                <h2 class="display-6 fw-bolder mb-2">{{ t('home.departments.title', "Bo'limlar", 'Departments', 'Otdely') }}</h2>
+                <p class="text-muted mb-0">{{ t('home.departments.subtitle', "Maktabdagi asosiy bo'limlar bilan tanishing", 'Explore the main school departments', 'Poznakomtes s osnovnymi otdelami shkoly') }}</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="/departments" class="btn btn-outline-primary rounded-pill px-4 py-2">{{ t('home.departments.all', "Barcha bo'limlar", 'All departments', 'Vse otdely') }}</a>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for dept in featured_departments %}
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div style="height:220px;">
+                        {% if dept.image_path %}
+                        <img src="{{ dept.image_path }}" class="w-100 h-100 object-fit-cover" alt="{{ ml(dept, 'name') }}">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-layer-group fs-1"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-4">
+                        <span class="badge bg-light text-primary border border-primary border-opacity-25 rounded-pill mb-3">{{ t('departments.category.' ~ dept.category_key, dept.category_key|capitalize, dept.category_key|capitalize, dept.category_key|capitalize) }}</span>
+                        <h5 class="fw-bold">{{ ml(dept, 'name') }}</h5>
+                        <p class="text-muted mb-4">{{ (ml(dept, 'description') or '')|striptags|truncate(140) }}</p>
+                        <a href="/departments/{{ dept.id }}" class="text-primary fw-semibold text-decoration-none">{{ t('home.departments.more', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-6 bg-white">
+    <div class="container">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-8">
+                <h2 class="display-6 fw-bolder mb-2">{{ t('home.teachers.cta.title', "Malakali ustozlarimiz bilan tanishing", 'Meet our qualified teachers', 'Poznakomtes s nashimi kvalifitsirovannymi uchitelyami') }}</h2>
+                <p class="text-muted mb-0">{{ t('home.teachers.cta.description', "Har bir fan bo'yicha tajribali pedagoglar o'quvchilarni qo'llab-quvvatlaydi.", 'Experienced teachers support students in every subject.', 'Opytnyye uchitelya podderzhivayut uchashchikhsya po kazhdomu predmetu.') }}</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="/teachers" class="btn btn-primary rounded-pill px-4 py-2">{{ t('home.teachers.cta.button', "Ustozlar ro'yxati", 'Teachers list', 'Spisok uchiteley') }}</a>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for teacher in featured_teachers %}
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div style="height:240px;">
+                        {% if teacher.image_path %}
+                        <img src="{{ teacher.image_path }}" class="w-100 h-100 object-fit-cover" alt="{{ teacher.first_name }} {{ teacher.last_name }}">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white">
+                            <i class="fas fa-user-tie fs-1 opacity-50"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-4">
+                        <span class="badge bg-info text-dark rounded-pill mb-3">{{ t('teachers.category.' ~ teacher.category_key, teacher.category_key|capitalize, teacher.category_key|capitalize, teacher.category_key|capitalize) }}</span>
+                        <h5 class="fw-bold mb-1">{{ teacher.first_name }} {{ teacher.last_name }}</h5>
+                        <p class="text-primary fw-semibold mb-2">{{ ml(teacher, 'subject') or '-' }}</p>
+                        <p class="text-muted mb-4">{{ (ml(teacher, 'bio') or t('teachers.card.about_placeholder', "Ustoz haqida ma'lumot kiritilmagan.", 'No teacher information entered.', 'Informatsiya ob uchitele ne ukazana.'))|striptags|truncate(120) }}</p>
+                        <a href="/teachers/{{ teacher.id }}" class="text-info fw-semibold text-decoration-none">{{ t('teachers.card.more', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-6 bg-dark text-white position-relative" style="background-image: linear-gradient(to right, var(--primary-dark), var(--primary));">
+    <div class="container text-center py-5 position-relative z-2">
+        <h2 class="display-4 fw-bolder mb-4">{{ t('home.contact.cta.title', "Ta'limni biz bilan boshlang", 'Start education with us', 'Nachnite obrazovaniye s nami') }}</h2>
+        <p class="lead mb-5 fw-light opacity-75 max-w-700 mx-auto">{{ t('home.contact.cta.description', "Dasturlar va imkoniyatlar haqida ko'proq ma'lumot olish uchun bog'laning.", 'Contact us to learn more about our programs and opportunities.', 'Svazhites s nami, chtoby uznat bolshe o programmakh i vozmozhnostyakh.') }}</p>
+        <a href="/contact" class="btn btn-warning text-dark fw-bold rounded-pill px-5 py-3 btn-lg shadow-lg">{{ t('home.contact.cta.button', "Bog'lanish", 'Contact us', 'Svazatsya') }} <i class="fas fa-paper-plane ms-2"></i></a>
+    </div>
+</section>
+{% endblock %}

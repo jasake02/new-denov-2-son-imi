@@ -1,0 +1,117 @@
+{% extends "public/base.html" %}
+
+{% block title %}{{ t('nav.departments', settings.nav_departments_uz, settings.nav_departments_en, settings.nav_departments_ru) }} - {{ sm('school_name', 'Denov 2-son Maktab') }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header position-relative d-flex align-items-center justify-content-center overflow-hidden" style="min-height: 350px; padding-top: 80px;">
+    <div class="header-bg position-absolute top-0 start-0 w-100 h-100">
+        <div class="hero-overlay"></div>
+        {% if settings.departments_header_media_type == 'video' %}
+            <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+                <source src="{{ settings.departments_header_media_path }}" type="video/mp4" />
+            </video>
+        {% else %}
+            <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ settings.departments_header_media_path or settings.about_image_path }}'); background-size: cover; background-position: center;"></div>
+        {% endif %}
+    </div>
+    <div class="container position-relative z-2 text-center text-white mt-5">
+        <h1 class="display-3 fw-bolder mb-3 text-shadow">{{ t('nav.departments', settings.nav_departments_uz, settings.nav_departments_en, settings.nav_departments_ru) }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center justify-content-center mb-0 bg-transparent p-0">
+                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none hover-white">{{ t('nav.home', settings.nav_home_uz, settings.nav_home_en, settings.nav_home_ru) }}</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">{{ t('nav.departments', settings.nav_departments_uz, settings.nav_departments_en, settings.nav_departments_ru) }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Departments Listing -->
+<section class="py-6 bg-light bg-gradient">
+    <div class="container">
+        <!-- Filter Tabs -->
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <div class="btn-group shadow-sm bg-white p-1 rounded-pill" role="group">
+                    <a href="/departments?category=all" class="btn rounded-pill px-4 py-2 {% if category == 'all' %}btn-primary fw-bold text-white{% else %}btn-link text-dark text-decoration-none{% endif %}">{{ t('departments.category.all', 'Barchasi', 'All', 'Vse') }}</a>
+                    <a href="/departments?category=leadership" class="btn rounded-pill px-4 py-2 {% if category == 'leadership' %}btn-primary fw-bold text-white{% else %}btn-link text-dark text-decoration-none{% endif %}">{{ t('departments.category.leadership', 'Rahbariyat', 'Leadership', 'Rukovodstvo') }}</a>
+                    <a href="/departments?category=academic" class="btn rounded-pill px-4 py-2 {% if category == 'academic' %}btn-primary fw-bold text-white{% else %}btn-link text-dark text-decoration-none{% endif %}">{{ t('departments.category.academic', "Akademik bo'limlar", 'Academic departments', 'Akademicheskiye otdely') }}</a>
+                    <a href="/departments?category=support" class="btn rounded-pill px-4 py-2 {% if category == 'support' %}btn-primary fw-bold text-white{% else %}btn-link text-dark text-decoration-none{% endif %}">{{ t('departments.category.support', "Qo'llab-quvvatlash", 'Support', 'Podderzhka') }}</a>
+                    <a href="/departments?category=clubs" class="btn rounded-pill px-4 py-2 {% if category == 'clubs' %}btn-primary fw-bold text-white{% else %}btn-link text-dark text-decoration-none{% endif %}">{{ t('departments.category.clubs', "To'garaklar", 'Clubs', 'Kruzhki') }}</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 align-items-stretch">
+            {% if departments %}
+                {% for dept in departments %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 border-0 bg-white rounded-4 overflow-hidden shadow-sm hover-shadow-xl transition-all profile-card">
+                        
+                        <!-- Top Image/Video Banner -->
+                        <div class="card-img-wrapper position-relative overflow-hidden" style="height: 200px;">
+                            {% if dept.image_path %}
+                                {% if dept.image_path.endswith('.mp4') or dept.image_path.endswith('.webm') or dept.image_path.endswith('.ogg') %}
+                                    <video class="w-100 h-100 object-fit-cover transition-scale" autoplay muted loop playsinline>
+                                        <source src="{{ dept.image_path }}" type="video/mp4" />
+                                    </video>
+                                {% else %}
+                                    <img src="{{ dept.image_path }}" class="w-100 h-100 object-fit-cover transition-scale" alt="Department">
+                                {% endif %}
+                            {% else %}
+                                <div class="w-100 h-100 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-layer-group text-primary fs-1 opacity-50"></i>
+                                </div>
+                            {% endif %}
+                            <div class="overlay-gradient position-absolute bottom-0 start-0 w-100 h-50" style="background: linear-gradient(to top, white 0%, transparent 100%);"></div>
+                            
+                            <!-- Floating Badge -->
+                            <div class="position-absolute align-items-center justify-content-center d-flex flex-column bg-accent text-white shadow-sm rounded-pill px-3 py-1" style="top: 16px; right: 16px;">
+                                <span class="fs-8 fw-semibold text-uppercase letter-spacing-1">{{ t('departments.category.' ~ dept.category_key, dept.category_key|capitalize, dept.category_key|capitalize, dept.category_key|capitalize) }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-4 pt-2 text-center position-relative">
+                            <!-- Avatar Overlapping -->
+                            <div class="avatar-circle rounded-circle border border-4 border-white shadow-sm bg-white overflow-hidden mx-auto mb-3" style="width: 80px; height: 80px; margin-top: -40px; position: relative; z-index: 2;">
+                                <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                                    <i class="fas {% if dept.category_key == 'leadership' %}fa-user-tie{% elif dept.category_key == 'academic' %}fa-book-open-reader{% elif dept.category_key == 'support' %}fa-handshake-angle{% else %}fa-users{% endif %} text-primary fs-3"></i>
+                                </div>
+                            </div>
+                            
+                            <h4 class="card-title fw-bold mb-2 text-dark">
+                                {% if lang == 'en' and dept.name_en %}{{ dept.name_en }}{% elif lang == 'ru' and dept.name_ru %}{{ dept.name_ru }}{% else %}{{ dept.name_uz }}{% endif %}
+                            </h4>
+                            
+                            <p class="card-text text-muted mb-4 line-clamp-3 fs-6">
+                                {% if lang == 'en' and dept.description_en %}{{ dept.description_en|striptags|truncate(120) }}{% elif lang == 'ru' and dept.description_ru %}{{ dept.description_ru|striptags|truncate(120) }}{% else %}{{ dept.description_uz|striptags|truncate(120) }}{% endif %}
+                            </p>
+                            
+                            {% if dept.has_subjects %}
+                                <div class="badge bg-light text-dark border rounded-pill px-3 py-2 mb-3 w-100 text-truncate">
+                                    <i class="fas fa-book-open text-primary me-2"></i> {{ t('departments.detail.subjects', "Maxsus fanlar", 'Specialized subjects', 'Profilnyye predmety') }}
+                                </div>
+                            {% endif %}
+                            
+                            <a href="/departments/{{ dept.id }}" class="btn btn-outline-primary rounded-pill w-100 py-2 hover-fill fw-semibold mt-auto btn-details">
+                                {{ t('departments.card.more', 'Batafsil', 'Details', 'Podrobnee') }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-layer-group text-muted opacity-25" style="font-size: 5rem;"></i>
+                    <h3 class="mt-4 text-muted">{{ t('departments.empty.title', "Bo'limlar topilmadi.", 'No departments found.', 'Otdely ne naydeny.') }}</h3>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+    .profile-card:hover .avatar-circle { transform: translateY(-5px); transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .fs-8 { font-size: 0.75rem; }
+</style>
+{% endblock %}

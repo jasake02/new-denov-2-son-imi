@@ -1,0 +1,132 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Boshqaruv Paneli{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Boshqaruv Paneli</h2>
+        <p class="text-muted mb-0">Sayt tarkibi, bo'limlar, ustozlar va e'lonlarni shu yerdan boshqaring.</p>
+    </div>
+    <a href="/admin/news" class="btn btn-primary"><i class="fas fa-plus me-2"></i> Kontent qo'shish</a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl col-md-6">
+        <div class="card bg-primary text-white h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body">
+                <h6 class="text-uppercase fw-semibold mb-2 opacity-75">Yangiliklar</h6>
+                <h2 class="mb-0 fw-bold">{{ news_count }}</h2>
+            </div>
+            <div class="card-footer bg-white bg-opacity-10 border-0">
+                <a href="/admin/news?kind=news" class="small text-white text-decoration-none">Boshqarish</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-6">
+        <div class="card bg-warning text-dark h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body">
+                <h6 class="text-uppercase fw-semibold mb-2 opacity-75">E'lonlar</h6>
+                <h2 class="mb-0 fw-bold">{{ announcements_count }}</h2>
+            </div>
+            <div class="card-footer bg-white bg-opacity-25 border-0">
+                <a href="/admin/news?kind=announcement" class="small text-dark text-decoration-none">Boshqarish</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-6">
+        <div class="card bg-success text-white h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body">
+                <h6 class="text-uppercase fw-semibold mb-2 opacity-75">Bo'limlar</h6>
+                <h2 class="mb-0 fw-bold">{{ departments_count }}</h2>
+            </div>
+            <div class="card-footer bg-white bg-opacity-10 border-0">
+                <a href="/admin/departments" class="small text-white text-decoration-none">Boshqarish</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-6">
+        <div class="card bg-info text-white h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body">
+                <h6 class="text-uppercase fw-semibold mb-2 opacity-75">Ustozlar</h6>
+                <h2 class="mb-0 fw-bold">{{ teachers_count }}</h2>
+            </div>
+            <div class="card-footer bg-white bg-opacity-10 border-0">
+                <a href="/admin/teachers" class="small text-white text-decoration-none">Boshqarish</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-6">
+        <div class="card bg-dark text-white h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body">
+                <h6 class="text-uppercase fw-semibold mb-2 opacity-75">Yangi xabarlar</h6>
+                <h2 class="mb-0 fw-bold">{{ unread_msgs }}</h2>
+            </div>
+            <div class="card-footer bg-white bg-opacity-10 border-0">
+                <a href="/admin/messages" class="small text-white text-decoration-none">Ko'rish</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-3 h-100">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-newspaper text-primary me-2"></i> So'nggi kontent</h5>
+                <a href="/admin/news" class="btn btn-sm btn-outline-primary">Barchasi</a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for news in recent_news %}
+                    <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex flex-column text-truncate pe-3">
+                            <span class="fw-semibold text-truncate">{{ news.title_uz }}</span>
+                            <small class="text-muted">
+                                <i class="far fa-clock me-1"></i> {{ news.created_date.strftime('%d.%m.%Y') }}
+                                {% if news.category_key == 'announcement' %}
+                                <span class="badge bg-warning text-dark ms-2">E'lon</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark ms-2">Yangilik</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <a href="/admin/news" class="btn btn-sm btn-light text-primary rounded-circle"><i class="fas fa-edit"></i></a>
+                    </li>
+                    {% endfor %}
+                    {% if not recent_news %}
+                    <li class="list-group-item p-4 text-center text-muted">Hozircha kontent yo'q.</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-3 h-100">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-envelope text-info me-2"></i> So'nggi xabarlar</h5>
+                <a href="/admin/messages" class="btn btn-sm btn-outline-info">Barchasi</a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for msg in recent_msgs %}
+                    <li class="list-group-item p-3 d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto text-truncate flex-grow-1">
+                            <div class="fw-bold text-truncate">{{ msg.full_name }} <small class="text-muted fw-normal ms-2">{{ msg.created_date.strftime('%d.%m.%Y') }}</small></div>
+                            <div class="text-muted small text-truncate">{{ msg.message }}</div>
+                        </div>
+                        {% if not msg.is_read %}
+                        <span class="badge bg-danger rounded-pill mt-1">Yangi</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                    {% if not recent_msgs %}
+                    <li class="list-group-item p-4 text-center text-muted">Hozircha xabarlar yo'q.</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

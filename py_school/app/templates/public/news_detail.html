@@ -1,0 +1,87 @@
+{% extends "public/base.html" %}
+
+{% block title %}
+{% if lang == 'en' and news.title_en %}{{ news.title_en }}{% elif lang == 'ru' and news.title_ru %}{{ news.title_ru }}{% else %}{{ news.title_uz }}{% endif %} - {{ sm('school_name', 'Denov 2-son Maktab') }}
+{% endblock %}
+
+{% block content %}
+<section class="page-header bg-dark position-relative d-flex align-items-end" style="min-height: 50vh; padding-top: 100px;">
+    <div class="header-bg position-absolute top-0 start-0 w-100 h-100">
+        <div class="hero-overlay" style="background: linear-gradient(to bottom, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.9) 100%);"></div>
+        {% if news.image_path %}
+            {% if news.image_path.endswith('.mp4') or news.image_path.endswith('.webm') or news.image_path.endswith('.ogg') %}
+                <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+                    <source src="{{ news.image_path }}" type="video/mp4" />
+                </video>
+            {% else %}
+                <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ news.image_path }}'); background-size: cover; background-position: center; filter: blur(2px);"></div>
+            {% endif %}
+        {% else %}
+            <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ settings.news_header_media_path or settings.hero_media_path }}'); background-size: cover; background-position: center; filter: blur(2px);"></div>
+        {% endif %}
+    </div>
+    
+    <div class="container position-relative z-2 pb-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto text-white">
+                <div class="d-flex align-items-center mb-3">
+                    {% set news_category_key = 'announcement' if news.category_key in ['announcement', 'agency'] else news.category_key %}
+                    <span class="badge bg-primary text-white px-3 py-2 ms-0 me-3 rounded-pill text-uppercase letter-spacing-1">{{ t('news.category.' ~ news_category_key, news_category_key|capitalize, news_category_key|capitalize, news_category_key|capitalize) }}</span>
+                    <span class="text-white-50"><i class="fas fa-calendar-alt me-2"></i> {{ news.created_date.strftime('%d.%m.%Y | %H:%M') }}</span>
+                </div>
+                <h1 class="display-4 fw-bolder mb-3 text-shadow lh-sm">
+                    {% if lang == 'en' and news.title_en %}{{ news.title_en }}{% elif lang == 'ru' and news.title_ru %}{{ news.title_ru }}{% else %}{{ news.title_uz }}{% endif %}
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent p-0 m-0">
+                        <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">{{ t('general.home', 'Bosh sahifa', 'Home', 'Glavnaya') }}</a></li>
+                        <li class="breadcrumb-item"><a href="/news" class="text-white-50 text-decoration-none">{{ t('nav.news', settings.nav_news_uz or "Yangiliklar", settings.nav_news_en or "News", settings.nav_news_ru or "Novosti") }}</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">{{ t('general.detail_page', 'Batafsil', 'Details', 'Podrobnee') }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="margin-top: -80px; position: relative; z-index: 10;">
+                    
+                    {% if news.image_path and not (news.image_path.endswith('.mp4') or news.image_path.endswith('.webm') or news.image_path.endswith('.ogg')) %}
+                    <img src="{{ news.image_path }}" class="img-fluid w-100" alt="News main image" style="max-height: 500px; object-fit: cover;">
+                    {% endif %}
+
+                    <div class="card-body p-4 p-md-5 bg-white">
+                        <div class="article-content fs-5 text-dark fw-light lh-lg">
+                            {% if lang == 'en' and news.content_en %}{{ news.content_en|safe }}{% elif lang == 'ru' and news.content_ru %}{{ news.content_ru|safe }}{% else %}{{ news.content_uz|safe }}{% endif %}
+                        </div>
+                        
+                        <hr class="my-5 border-secondary opacity-25">
+                        
+                        <!-- Share Options -->
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <a href="/news" class="btn btn-outline-primary rounded-pill px-4 hover-fill"><i class="fas fa-arrow-left me-2"></i> {{ t('news.detail.back', 'Barcha yangiliklar', 'All news', 'Vse novosti') }}</a>
+                            
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted fw-bold small text-uppercase me-2">{{ t('news.detail.share', 'Ulashish', 'Share', 'Podelitsya') }}:</span>
+                                <a href="https://t.me/share/url?url={{ request.url._url }}&text={% if lang == 'en' and news.title_en %}{{ news.title_en }}{% elif lang == 'ru' and news.title_ru %}{{ news.title_ru }}{% else %}{{ news.title_uz }}{% endif %}" target="_blank" class="btn btn-sm btn-light rounded-circle text-primary social-share"><i class="fab fa-telegram-plane"></i></a>
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url._url }}" target="_blank" class="btn btn-sm btn-light rounded-circle text-primary social-share"><i class="fab fa-facebook-f"></i></a>
+                                <button class="btn btn-sm btn-light rounded-circle text-primary social-share" onclick="navigator.clipboard.writeText(window.location.href); alert(`{{ t('news.detail.copied', 'Nusxalandi!', 'Copied!', 'Skopirovano!') }}`);"><i class="fas fa-link"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .article-content img { max-width: 100%; height: auto; border-radius: 12px; margin: 1.5rem 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .social-share { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s; }
+    .social-share:hover { background: var(--primary) !important; color: white !important; transform: translateY(-3px); }
+</style>
+{% endblock %}

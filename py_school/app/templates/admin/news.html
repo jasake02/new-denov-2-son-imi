@@ -1,0 +1,203 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Yangiliklar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-newspaper text-primary me-2"></i> Yangiliklar va E'lonlar</h2>
+        <p class="text-muted mb-0">Yangilik va e'lonlarni bir joydan yaratish, tahrirlash va o'chirish mumkin.</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="fas fa-plus me-1"></i> Yangi qo'shish
+    </button>
+</div>
+
+<div class="d-flex gap-2 flex-wrap mb-3">
+    <a href="/admin/news?kind=all" class="btn {% if kind == 'all' %}btn-dark{% else %}btn-outline-dark{% endif %} btn-sm">Barchasi</a>
+    <a href="/admin/news?kind=news" class="btn {% if kind == 'news' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">Yangiliklar</a>
+    <a href="/admin/news?kind=announcement" class="btn {% if kind == 'announcement' %}btn-warning{% else %}btn-outline-warning{% endif %} btn-sm">E'lonlar</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Media</th>
+                        <th>Sarlavha</th>
+                        <th>Kategoriya</th>
+                        <th>Sana</th>
+                        <th class="text-end">Harakatlar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr id="item-{{ item.id }}">
+                        <td style="width: 100px;">
+                            {% if item.image_path %}
+                                {% if item.image_path.endswith('.mp4') or item.image_path.endswith('.webm') %}
+                                <video src="{{ item.image_path }}" class="img-thumbnail" style="height: 60px; width: 80px; object-fit: cover;"></video>
+                                {% else %}
+                                <img src="{{ item.image_path }}" class="img-thumbnail" style="height: 60px; width: 80px; object-fit: cover;">
+                                {% endif %}
+                            {% else %}
+                                <div class="bg-light text-muted d-flex align-items-center justify-content-center img-thumbnail" style="height: 60px; width: 80px;">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ item.title_uz|truncate(55) }}</div>
+                            <small class="text-muted">{{ item.content_uz|striptags|truncate(80) }}</small>
+                        </td>
+                        <td>
+                            {% if item.category_key == 'announcement' %}
+                            <span class="badge bg-warning text-dark">E'lon</span>
+                            {% else %}
+                            <span class="badge bg-primary">Yangilik</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.created_date.strftime('%d.%m.%Y | %H:%M') }}</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ item.id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="/admin/news/delete/{{ item.id }}" method="post" class="d-inline" onsubmit="return confirm('Rostdan ham o\\'chirmoqchimisiz?');">
+                                <input type="hidden" name="kind" value="{{ kind }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not items %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Hozircha ma'lumot yo'q.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% for item in items %}
+<div class="modal fade" id="editModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <form class="modal-content" method="post" action="/admin/news/edit/{{ item.id }}" enctype="multipart/form-data">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Kontentni tahrirlash</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Kategoriya</label>
+                        <select class="form-select" name="category_key" required>
+                            <option value="school" {% if item.category_key != 'announcement' %}selected{% endif %}>Yangilik</option>
+                            <option value="announcement" {% if item.category_key == 'announcement' %}selected{% endif %}>E'lon</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Yangi rasm yoki video</label>
+                        <input type="file" class="form-control" name="media_file" accept="image/*,video/*">
+                    </div>
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-primary">O'zbekcha</h6></div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Sarlavha (UZ)</label>
+                        <input type="text" class="form-control" name="title_uz" value="{{ item.title_uz }}" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Matn (UZ)</label>
+                        <textarea class="form-control" name="content_uz" rows="4" required>{{ item.content_uz }}</textarea>
+                    </div>
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-primary">Inglizcha</h6></div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Sarlavha (EN)</label>
+                        <input type="text" class="form-control" name="title_en" value="{{ item.title_en or '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Matn (EN)</label>
+                        <textarea class="form-control" name="content_en" rows="3">{{ item.content_en or '' }}</textarea>
+                    </div>
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-primary">Ruscha</h6></div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Sarlavha (RU)</label>
+                        <input type="text" class="form-control" name="title_ru" value="{{ item.title_ru or '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Matn (RU)</label>
+                        <textarea class="form-control" name="content_ru" rows="3">{{ item.content_ru or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                <button type="submit" class="btn btn-primary px-4 fw-bold"><i class="fas fa-save me-1"></i> Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <form class="modal-content" method="post" action="/admin/news/create" enctype="multipart/form-data">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Yangi kontent qo'shish</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Kategoriya</label>
+                        <select class="form-select" name="category_key" required>
+                            <option value="school">Yangilik</option>
+                            <option value="announcement">E'lon</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Rasm yoki video</label>
+                        <input type="file" class="form-control" name="media_file" accept="image/*,video/*">
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-primary">O'zbekcha</h6></div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Sarlavha (UZ)</label>
+                        <input type="text" class="form-control" name="title_uz" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Matn (UZ)</label>
+                        <textarea class="form-control" name="content_uz" rows="4" required></textarea>
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-primary">Inglizcha</h6></div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Sarlavha (EN)</label>
+                        <input type="text" class="form-control" name="title_en">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Matn (EN)</label>
+                        <textarea class="form-control" name="content_en" rows="3"></textarea>
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-primary">Ruscha</h6></div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Sarlavha (RU)</label>
+                        <input type="text" class="form-control" name="title_ru">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Matn (RU)</label>
+                        <textarea class="form-control" name="content_ru" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                <button type="submit" class="btn btn-primary px-4 fw-bold"><i class="fas fa-save me-1"></i> Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

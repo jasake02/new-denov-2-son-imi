@@ -1,0 +1,283 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Ustozlar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-chalkboard-teacher text-info me-2"></i> Ustozlar</h2>
+        <p class="text-muted mb-0">Ustozlarning ism-familyasi, rasmi, yutuqlari, o'qitadigan fani va tavsifini boshqaring.</p>
+    </div>
+    <button class="btn btn-info text-white" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="fas fa-plus me-1"></i> Ustoz qo'shish
+    </button>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Rasm</th>
+                        <th>F.I.Sh.</th>
+                        <th>Fan</th>
+                        <th>Kategoriya</th>
+                        <th>Tartib</th>
+                        <th class="text-end">Harakatlar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td style="width: 90px;">
+                            {% if item.image_path %}
+                            <img src="{{ item.image_path }}" class="img-thumbnail rounded-circle" style="height: 64px; width: 64px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-light text-muted d-flex align-items-center justify-content-center rounded-circle border" style="height: 64px; width: 64px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ item.first_name }} {{ item.last_name }}</div>
+                            <small class="text-muted">{{ item.position_uz or "Lavozim ko'rsatilmagan" }}</small>
+                        </td>
+                        <td>{{ item.subject_uz or "-" }}</td>
+                        <td>
+                            <span class="badge bg-info text-dark">
+                                {% if item.category_key == 'leadership' %}Rahbariyat
+                                {% elif item.category_key == 'science' %}Aniq fanlar
+                                {% elif item.category_key == 'language' %}Tillar
+                                {% elif item.category_key == 'natural' %}Tabiiy fanlar
+                                {% else %}{{ item.category_key }}{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ item.display_order }}</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ item.id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="/admin/teachers/delete/{{ item.id }}" method="post" class="d-inline" onsubmit="return confirm('Rostdan ham o\\'chirmoqchimisiz?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not items %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Hozircha ustozlar qo'shilmagan.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% for item in items %}
+<div class="modal fade" id="editModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <form class="modal-content" method="post" action="/admin/teachers/edit/{{ item.id }}" enctype="multipart/form-data">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Ustozni tahrirlash</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Ism</label>
+                        <input type="text" class="form-control" name="first_name" value="{{ item.first_name }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Familiya</label>
+                        <input type="text" class="form-control" name="last_name" value="{{ item.last_name }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Sharif</label>
+                        <input type="text" class="form-control" name="middle_name" value="{{ item.middle_name or '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Kategoriya</label>
+                        <select class="form-select" name="category_key" required>
+                            <option value="leadership" {% if item.category_key == 'leadership' %}selected{% endif %}>Rahbariyat</option>
+                            <option value="science" {% if item.category_key == 'science' %}selected{% endif %}>Aniq fanlar</option>
+                            <option value="language" {% if item.category_key == 'language' %}selected{% endif %}>Tillar</option>
+                            <option value="natural" {% if item.category_key == 'natural' %}selected{% endif %}>Tabiiy fanlar</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Tartib raqami</label>
+                        <input type="number" class="form-control" name="display_order" value="{{ item.display_order or 0 }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Yangi rasm</label>
+                        <input type="file" class="form-control" name="media_file" accept="image/*">
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-info">O'zbekcha</h6></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lavozimi (UZ)</label>
+                        <input type="text" class="form-control" name="position_uz" value="{{ item.position_uz or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">O'qitadigan fan (UZ)</label>
+                        <input type="text" class="form-control" name="subject_uz" value="{{ item.subject_uz or '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Qisqacha ma'lumot (UZ)</label>
+                        <textarea class="form-control" name="bio_uz" rows="3">{{ item.bio_uz or '' }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Yutuqlar (UZ)</label>
+                        <textarea class="form-control" name="achievements_uz" rows="3">{{ item.achievements_uz or '' }}</textarea>
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-info">Inglizcha</h6></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lavozimi (EN)</label>
+                        <input type="text" class="form-control" name="position_en" value="{{ item.position_en or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fan (EN)</label>
+                        <input type="text" class="form-control" name="subject_en" value="{{ item.subject_en or '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Ma'lumot (EN)</label>
+                        <textarea class="form-control" name="bio_en" rows="2">{{ item.bio_en or '' }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Yutuqlar (EN)</label>
+                        <textarea class="form-control" name="achievements_en" rows="2">{{ item.achievements_en or '' }}</textarea>
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-info">Ruscha</h6></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lavozimi (RU)</label>
+                        <input type="text" class="form-control" name="position_ru" value="{{ item.position_ru or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fan (RU)</label>
+                        <input type="text" class="form-control" name="subject_ru" value="{{ item.subject_ru or '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Ma'lumot (RU)</label>
+                        <textarea class="form-control" name="bio_ru" rows="2">{{ item.bio_ru or '' }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Yutuqlar (RU)</label>
+                        <textarea class="form-control" name="achievements_ru" rows="2">{{ item.achievements_ru or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                <button type="submit" class="btn btn-info text-white px-4 fw-bold"><i class="fas fa-save me-1"></i> Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <form class="modal-content" method="post" action="/admin/teachers/create" enctype="multipart/form-data">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Yangi ustoz qo'shish</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Ism</label>
+                        <input type="text" class="form-control" name="first_name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Familiya</label>
+                        <input type="text" class="form-control" name="last_name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Sharif</label>
+                        <input type="text" class="form-control" name="middle_name">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Kategoriya</label>
+                        <select class="form-select" name="category_key" required>
+                            <option value="leadership">Rahbariyat</option>
+                            <option value="science" selected>Aniq fanlar</option>
+                            <option value="language">Tillar</option>
+                            <option value="natural">Tabiiy fanlar</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Tartib raqami</label>
+                        <input type="number" class="form-control" name="display_order" value="0">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Rasm</label>
+                        <input type="file" class="form-control" name="media_file" accept="image/*">
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-info">O'zbekcha</h6></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lavozimi (UZ)</label>
+                        <input type="text" class="form-control" name="position_uz">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">O'qitadigan fan (UZ)</label>
+                        <input type="text" class="form-control" name="subject_uz">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Qisqacha ma'lumot (UZ)</label>
+                        <textarea class="form-control" name="bio_uz" rows="3"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Yutuqlar (UZ)</label>
+                        <textarea class="form-control" name="achievements_uz" rows="3"></textarea>
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-info">Inglizcha</h6></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lavozimi (EN)</label>
+                        <input type="text" class="form-control" name="position_en">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fan (EN)</label>
+                        <input type="text" class="form-control" name="subject_en">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Ma'lumot (EN)</label>
+                        <textarea class="form-control" name="bio_en" rows="2"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Yutuqlar (EN)</label>
+                        <textarea class="form-control" name="achievements_en" rows="2"></textarea>
+                    </div>
+
+                    <div class="col-12"><h6 class="border-bottom pb-2 text-info">Ruscha</h6></div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Lavozimi (RU)</label>
+                        <input type="text" class="form-control" name="position_ru">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fan (RU)</label>
+                        <input type="text" class="form-control" name="subject_ru">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Ma'lumot (RU)</label>
+                        <textarea class="form-control" name="bio_ru" rows="2"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Yutuqlar (RU)</label>
+                        <textarea class="form-control" name="achievements_ru" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                <button type="submit" class="btn btn-info text-white px-4 fw-bold"><i class="fas fa-save me-1"></i> Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

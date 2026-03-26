@@ -1,0 +1,247 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Sayt Sozlamalari{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-cogs text-secondary me-2"></i> Sayt Sozlamalari</h2>
+        <p class="text-muted mb-0">Asosiy yozuvlar, ranglar, media va aloqa ma'lumotlarini tahrirlang.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        <form action="/admin/sitesettings" method="post" enctype="multipart/form-data">
+            <h5 class="border-bottom pb-2 mb-4 text-primary">Brend va navigatsiya</h5>
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Maktab nomi (UZ)</label>
+                    <input type="text" name="school_name_uz" class="form-control" value="{{ settings.school_name_uz or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Maktab nomi (EN)</label>
+                    <input type="text" name="school_name_en" class="form-control" value="{{ settings.school_name_en or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Maktab nomi (RU)</label>
+                    <input type="text" name="school_name_ru" class="form-control" value="{{ settings.school_name_ru or '' }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Logo fayli</label>
+                    <input type="file" name="navbar_logo_file" class="form-control" accept="image/*">
+                    {% if settings.navbar_logo_path %}<small class="text-muted d-block mt-2">{{ settings.navbar_logo_path }}</small>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Favicon fayli</label>
+                    <input type="file" name="favicon_file" class="form-control" accept="image/*">
+                    {% if settings.favicon_path %}<small class="text-muted d-block mt-2">{{ settings.favicon_path }}</small>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Bosh sahifa nomi (UZ)</label>
+                    <input type="text" name="nav_home_uz" class="form-control" value="{{ settings.nav_home_uz or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Maktab haqida (UZ)</label>
+                    <input type="text" name="nav_about_uz" class="form-control" value="{{ settings.nav_about_uz or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Yangiliklar (UZ)</label>
+                    <input type="text" name="nav_news_uz" class="form-control" value="{{ settings.nav_news_uz or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Bo'limlar sahifasi (UZ)</label>
+                    <input type="text" name="nav_departments_uz" class="form-control" value="{{ settings.nav_departments_uz or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Bog'lanish (UZ)</label>
+                    <input type="text" name="nav_contact_uz" class="form-control" value="{{ settings.nav_contact_uz or '' }}">
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-info mb-0">
+                        `E'lonlar`, `Ustozlar` va boshqa umumiy matnlar `Sayt matnlari` bo'limidan 3 tilda tahrirlanadi.
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="border-bottom pb-2 mb-4 text-success">Ranglar</h5>
+            <div class="row g-4 mb-5">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Asosiy rang</label>
+                    <input type="color" name="primary_color" class="form-control form-control-color" value="{{ settings.primary_color or '#1e293b' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">To'q asosiy rang</label>
+                    <input type="color" name="primary_dark_color" class="form-control form-control-color" value="{{ settings.primary_dark_color or '#0f172a' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Aksent rang</label>
+                    <input type="color" name="accent_color" class="form-control form-control-color" value="{{ settings.accent_color or '#0ea5e9' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Tana foni</label>
+                    <input type="color" name="body_bg_color" class="form-control form-control-color" value="{{ settings.body_bg_color or '#ffffff' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Navbar foni</label>
+                    <input type="color" name="navbar_bg_color" class="form-control form-control-color" value="{{ settings.navbar_bg_color or '#1e293b' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Navbar matni</label>
+                    <input type="color" name="navbar_text_color" class="form-control form-control-color" value="{{ settings.navbar_text_color or '#ffffff' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Navbar hover rangi</label>
+                    <input type="color" name="navbar_hover_color" class="form-control form-control-color" value="{{ settings.navbar_hover_color or '#facc15' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Footer foni</label>
+                    <input type="color" name="footer_bg_color" class="form-control form-control-color" value="{{ settings.footer_bg_color or '#111827' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Footer matni</label>
+                    <input type="color" name="footer_text_color" class="form-control form-control-color" value="{{ settings.footer_text_color or '#e5e7eb' }}">
+                </div>
+            </div>
+
+            <h5 class="border-bottom pb-2 mb-4 text-info">Hero va sahifa media</h5>
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Hero media</label>
+                    <input type="file" name="hero_media_file" class="form-control" accept="image/*,video/*">
+                    {% if settings.hero_media_path %}<small class="text-muted d-block mt-2">{{ settings.hero_media_path }}</small>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">About sahifa rasmi</label>
+                    <input type="file" name="about_image_file" class="form-control" accept="image/*">
+                    {% if settings.about_image_path %}<small class="text-muted d-block mt-2">{{ settings.about_image_path }}</small>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">About header media</label>
+                    <input type="file" name="about_header_media_file" class="form-control" accept="image/*,video/*">
+                    {% if settings.about_header_media_path %}<small class="text-muted d-block mt-2">{{ settings.about_header_media_path }}</small>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">News header media</label>
+                    <input type="file" name="news_header_media_file" class="form-control" accept="image/*,video/*">
+                    {% if settings.news_header_media_path %}<small class="text-muted d-block mt-2">{{ settings.news_header_media_path }}</small>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Departments header media</label>
+                    <input type="file" name="departments_header_media_file" class="form-control" accept="image/*,video/*">
+                    {% if settings.departments_header_media_path %}<small class="text-muted d-block mt-2">{{ settings.departments_header_media_path }}</small>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Contact header media</label>
+                    <input type="file" name="contact_header_media_file" class="form-control" accept="image/*,video/*">
+                    {% if settings.contact_header_media_path %}<small class="text-muted d-block mt-2">{{ settings.contact_header_media_path }}</small>{% endif %}
+                </div>
+            </div>
+
+            <h5 class="border-bottom pb-2 mb-4 text-primary">Matnlar</h5>
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Hero sarlavha (UZ)</label>
+                    <input type="text" name="hero_title_uz" class="form-control" value="{{ settings.hero_title_uz or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Hero sarlavha (EN)</label>
+                    <input type="text" name="hero_title_en" class="form-control" value="{{ settings.hero_title_en or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Hero sarlavha (RU)</label>
+                    <input type="text" name="hero_title_ru" class="form-control" value="{{ settings.hero_title_ru or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Hero subtitle (UZ)</label>
+                    <input type="text" name="hero_subtitle_uz" class="form-control" value="{{ settings.hero_subtitle_uz or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Hero subtitle (EN)</label>
+                    <input type="text" name="hero_subtitle_en" class="form-control" value="{{ settings.hero_subtitle_en or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Hero subtitle (RU)</label>
+                    <input type="text" name="hero_subtitle_ru" class="form-control" value="{{ settings.hero_subtitle_ru or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">About sarlavha (UZ)</label>
+                    <input type="text" name="about_title_uz" class="form-control" value="{{ settings.about_title_uz or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">About sarlavha (EN)</label>
+                    <input type="text" name="about_title_en" class="form-control" value="{{ settings.about_title_en or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">About sarlavha (RU)</label>
+                    <input type="text" name="about_title_ru" class="form-control" value="{{ settings.about_title_ru or '' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">About tavsifi (UZ)</label>
+                    <textarea name="about_description_uz" class="form-control" rows="4">{{ settings.about_description_uz or '' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">About tavsifi (EN)</label>
+                    <textarea name="about_description_en" class="form-control" rows="3">{{ settings.about_description_en or '' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">About tavsifi (RU)</label>
+                    <textarea name="about_description_ru" class="form-control" rows="3">{{ settings.about_description_ru or '' }}</textarea>
+                </div>
+            </div>
+
+            <h5 class="border-bottom pb-2 mb-4 text-success">Aloqa va ijtimoiy tarmoqlar</h5>
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Telefon raqam</label>
+                    <input type="text" name="footer_phone" class="form-control" value="{{ settings.footer_phone or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Pochta</label>
+                    <input type="email" name="footer_email" class="form-control" value="{{ settings.footer_email or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Xarita iframe URL</label>
+                    <input type="text" name="footer_map_embed_url" class="form-control" value="{{ settings.footer_map_embed_url or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Manzil (UZ)</label>
+                    <input type="text" name="footer_address_uz" class="form-control" value="{{ settings.footer_address_uz or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Manzil (EN)</label>
+                    <input type="text" name="footer_address_en" class="form-control" value="{{ settings.footer_address_en or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Manzil (RU)</label>
+                    <input type="text" name="footer_address_ru" class="form-control" value="{{ settings.footer_address_ru or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Telegram</label>
+                    <input type="url" name="telegram_url" class="form-control" value="{{ settings.telegram_url or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Instagram</label>
+                    <input type="url" name="instagram_url" class="form-control" value="{{ settings.instagram_url or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Facebook</label>
+                    <input type="url" name="facebook_url" class="form-control" value="{{ settings.facebook_url or '' }}">
+                </div>
+            </div>
+
+            <h5 class="border-bottom pb-2 mb-4 text-secondary">Qo'shimcha CSS</h5>
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Custom CSS</label>
+                <textarea name="custom_css" class="form-control font-monospace" rows="6">{{ settings.custom_css or '' }}</textarea>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary px-5 fw-bold"><i class="fas fa-save me-2"></i> Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
