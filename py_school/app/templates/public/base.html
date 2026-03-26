@@ -3,6 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (() => {
+            const root = document.documentElement;
+            let theme = "light";
+            try {
+                const savedTheme = localStorage.getItem("denov-theme");
+                if (savedTheme === "dark" || savedTheme === "light") {
+                    theme = savedTheme;
+                } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                    theme = "dark";
+                }
+            } catch (error) {
+                theme = "light";
+            }
+            root.dataset.theme = theme;
+            root.setAttribute("data-bs-theme", theme);
+        })();
+    </script>
     <title>{% block title %}{{ sm('school_name', 'Denov 2-son Maktab') }}{% endblock %}</title>
     <meta name="description" content="{% block description %}{{ sm('school_name', 'Denov 2-son Maktab') }} rasmiy sayti.{% endblock %}">
 
@@ -27,10 +45,37 @@
             --footer-bg: {{ settings.footer_bg_color or '#111827' }};
             --footer-text: {{ settings.footer_text_color or '#e5e7eb' }};
             --body-bg: {{ settings.body_bg_color or '#ffffff' }};
+            --surface-bg: #ffffff;
+            --surface-muted: #f8fafc;
+            --surface-elevated: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-soft: rgba(148, 163, 184, 0.18);
+            --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+        html[data-theme='dark'] {
+            color-scheme: dark;
+            --body-bg: #020817;
+            --nav-bg: #081120;
+            --nav-text: #e2e8f0;
+            --nav-hover: #7dd3fc;
+            --footer-bg: #020617;
+            --footer-text: #cbd5e1;
+            --surface-bg: #0f172a;
+            --surface-muted: #111c31;
+            --surface-elevated: #16233d;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-soft: rgba(148, 163, 184, 0.24);
+            --shadow-soft: 0 22px 58px rgba(2, 6, 23, 0.42);
         }
         {% if settings.custom_css %}{{ settings.custom_css | safe }}{% endif %}
 
-        body { background: var(--body-bg, #ffffff); }
+        body {
+            background: var(--body-bg, #ffffff);
+            color: var(--text-main, #0f172a);
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
         .premium-navbar {
             background: var(--nav-bg, #1e293b) !important;
             backdrop-filter: blur(20px);
@@ -91,6 +136,23 @@
             transition: all 0.3s;
         }
         .lang-btn:hover { background: rgba(250, 204, 21, 0.2); border-color: var(--nav-hover, #facc15); color: var(--nav-hover, #facc15) !important; }
+        .theme-toggle {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle:hover {
+            background: rgba(125, 211, 252, 0.18);
+            border-color: rgba(125, 211, 252, 0.4);
+            color: #7dd3fc;
+        }
         .premium-footer {
             background: var(--footer-bg, #111827);
             color: var(--footer-text, #e5e7eb);
@@ -152,6 +214,80 @@
         .footer-secret-link:hover {
             color: #7dd3fc;
         }
+        html[data-theme='dark'] .bg-light { background-color: var(--surface-muted) !important; }
+        html[data-theme='dark'] .bg-white,
+        html[data-theme='dark'] .card,
+        html[data-theme='dark'] .modal-content,
+        html[data-theme='dark'] .accordion-item,
+        html[data-theme='dark'] .dropdown-menu,
+        html[data-theme='dark'] .list-group-item {
+            background-color: var(--surface-bg) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-soft) !important;
+        }
+        html[data-theme='dark'] .card,
+        html[data-theme='dark'] .modal-content,
+        html[data-theme='dark'] .shadow-sm,
+        html[data-theme='dark'] .shadow,
+        html[data-theme='dark'] .shadow-lg {
+            box-shadow: var(--shadow-soft) !important;
+        }
+        html[data-theme='dark'] .text-dark,
+        html[data-theme='dark'] .btn-link.text-dark,
+        html[data-theme='dark'] a.text-dark { color: var(--text-main) !important; }
+        html[data-theme='dark'] .text-muted,
+        html[data-theme='dark'] .text-secondary,
+        html[data-theme='dark'] .text-white-50 { color: var(--text-muted) !important; }
+        html[data-theme='dark'] .border,
+        html[data-theme='dark'] .border-top,
+        html[data-theme='dark'] .border-bottom,
+        html[data-theme='dark'] .border-start,
+        html[data-theme='dark'] .border-end { border-color: var(--border-soft) !important; }
+        html[data-theme='dark'] .form-control,
+        html[data-theme='dark'] .form-select,
+        html[data-theme='dark'] .form-floating > .form-control,
+        html[data-theme='dark'] .form-floating > .form-select {
+            background-color: var(--surface-muted);
+            color: var(--text-main);
+            border-color: var(--border-soft);
+        }
+        html[data-theme='dark'] .form-control::placeholder { color: rgba(148, 163, 184, 0.8); }
+        html[data-theme='dark'] .form-floating > label { color: var(--text-muted); }
+        html[data-theme='dark'] .form-control:focus,
+        html[data-theme='dark'] .form-select:focus {
+            background-color: var(--surface-elevated);
+            color: var(--text-main);
+            border-color: rgba(125, 211, 252, 0.5);
+            box-shadow: 0 0 0 0.2rem rgba(125, 211, 252, 0.12);
+        }
+        html[data-theme='dark'] .btn-light {
+            background-color: var(--surface-elevated);
+            color: var(--text-main);
+            border-color: var(--border-soft);
+        }
+        html[data-theme='dark'] .btn-outline-secondary {
+            color: #cbd5e1;
+            border-color: rgba(148, 163, 184, 0.35);
+        }
+        html[data-theme='dark'] .btn-outline-secondary:hover {
+            background-color: var(--surface-elevated);
+            color: #ffffff;
+            border-color: rgba(148, 163, 184, 0.5);
+        }
+        html[data-theme='dark'] .social-icon,
+        html[data-theme='dark'] .lang-btn,
+        html[data-theme='dark'] .theme-toggle {
+            border-color: rgba(148, 163, 184, 0.18);
+        }
+        html[data-theme='dark'] .glass-dropdown {
+            background: rgba(7, 14, 26, 0.96) !important;
+            border: 1px solid rgba(148, 163, 184, 0.16) !important;
+        }
+        html[data-theme='dark'] .badge.bg-white {
+            background: rgba(15, 23, 42, 0.82) !important;
+            color: #e2e8f0 !important;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
         @media (max-width: 767.98px) {
             .premium-navbar .navbar-brand {
                 width: 56px;
@@ -185,6 +321,9 @@
                 </ul>
 
                 <div class="d-flex align-items-center gap-2 ms-2">
+                    <button type="button" class="theme-toggle" id="themeToggle" aria-label='{{ t("theme.toggle", "Ko\'rinishni almashtirish", "Toggle theme", "Pereklyuchit temu") }}' title='{{ t("theme.toggle", "Ko\'rinishni almashtirish", "Toggle theme", "Pereklyuchit temu") }}'>
+                        <i class="fas fa-moon" id="themeToggleIcon"></i>
+                    </button>
                     <div class="dropdown">
                         <button class="lang-btn dropdown-toggle border-0" data-bs-toggle="dropdown">
                             <i class="fas fa-globe me-1"></i>
@@ -279,9 +418,40 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const root = document.documentElement;
         const navbar = document.getElementById('mainNav');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+
+        function applyTheme(theme, persist = false) {
+            root.dataset.theme = theme;
+            root.setAttribute('data-bs-theme', theme);
+
+            if (themeToggleIcon) {
+                themeToggleIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+
+            if (themeToggle) {
+                themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+            }
+
+            if (persist) {
+                try {
+                    localStorage.setItem('denov-theme', theme);
+                } catch (error) {
+                    console.warn('Theme preference was not saved.', error);
+                }
+            }
+        }
+
+        applyTheme(root.dataset.theme || 'light');
+
         window.addEventListener('scroll', () => {
-            navbar.classList.toggle('scrolled', window.scrollY > 50);
+            navbar?.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        themeToggle?.addEventListener('click', () => {
+            applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark', true);
         });
     </script>
     {% block scripts %}{% endblock %}

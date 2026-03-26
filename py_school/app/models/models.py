@@ -154,8 +154,12 @@ class SiteSetting(Base):
     about_header_media_type = Column(String, nullable=True)
     news_header_media_path = Column(String, nullable=True)
     news_header_media_type = Column(String, nullable=True)
+    announcements_header_media_path = Column(String, nullable=True)
+    announcements_header_media_type = Column(String, nullable=True)
     departments_header_media_path = Column(String, nullable=True)
     departments_header_media_type = Column(String, nullable=True)
+    teachers_header_media_path = Column(String, nullable=True)
+    teachers_header_media_type = Column(String, nullable=True)
     contact_header_media_path = Column(String, nullable=True)
     contact_header_media_type = Column(String, nullable=True)
     

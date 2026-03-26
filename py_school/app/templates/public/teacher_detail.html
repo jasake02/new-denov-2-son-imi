@@ -12,7 +12,7 @@
         {% if teacher.image_path %}
         <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ teacher.image_path }}'); background-size: cover; background-position: center top;"></div>
         {% else %}
-        <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ settings.about_image_path or settings.hero_media_path }}'); background-size: cover; background-position: center;"></div>
+        <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ settings.teachers_header_media_path or settings.about_image_path or settings.hero_media_path }}'); background-size: cover; background-position: center;"></div>
         {% endif %}
     </div>
 

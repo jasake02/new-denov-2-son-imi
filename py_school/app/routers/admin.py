@@ -627,7 +627,9 @@ async def admin_settings_post(request: Request, admin_id: int = Depends(require_
         "about_image_file": "about_image_path",
         "about_header_media_file": "about_header_media_path",
         "news_header_media_file": "news_header_media_path",
+        "announcements_header_media_file": "announcements_header_media_path",
         "departments_header_media_file": "departments_header_media_path",
+        "teachers_header_media_file": "teachers_header_media_path",
         "contact_header_media_file": "contact_header_media_path",
     }
 

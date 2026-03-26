@@ -1,9 +1,9 @@
 import os
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker
 
-from app.database import DATABASE_PATH, IS_SQLITE, SessionLocal
+from app.database import DATABASE_PATH, IS_SQLITE, SessionLocal, engine
 from app.models.models import AdminUser, ContentItem, ContactMessage, Department, News, SiteSetting, Teacher
 
 BOOTSTRAP_MODELS = (
@@ -15,6 +15,33 @@ BOOTSTRAP_MODELS = (
     Teacher,
     ContactMessage,
 )
+
+SITE_SETTINGS_RUNTIME_COLUMNS = {
+    "announcements_header_media_path": "TEXT",
+    "announcements_header_media_type": "VARCHAR(20)",
+    "teachers_header_media_path": "TEXT",
+    "teachers_header_media_type": "VARCHAR(20)",
+}
+
+
+def ensure_site_settings_schema(target_engine=engine, sqlite_mode: bool | None = None) -> None:
+    sqlite_mode = IS_SQLITE if sqlite_mode is None else sqlite_mode
+    inspector = inspect(target_engine)
+
+    if "site_settings" not in inspector.get_table_names():
+        return
+
+    existing_columns = {column["name"] for column in inspector.get_columns("site_settings")}
+
+    with target_engine.begin() as connection:
+        for column_name, column_type in SITE_SETTINGS_RUNTIME_COLUMNS.items():
+            if column_name in existing_columns:
+                continue
+
+            if sqlite_mode:
+                connection.execute(text(f"ALTER TABLE site_settings ADD COLUMN {column_name} {column_type}"))
+            else:
+                connection.execute(text(f"ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS {column_name} {column_type}"))
 
 
 def sync_postgres_sequences() -> None:
@@ -66,6 +93,7 @@ def bootstrap_remote_database() -> bool:
         f"sqlite:///{DATABASE_PATH.as_posix()}",
         connect_args={"check_same_thread": False},
     )
+    ensure_site_settings_schema(source_engine, sqlite_mode=True)
     SourceSession = sessionmaker(autocommit=False, autoflush=False, bind=source_engine)
 
     source_db = SourceSession()

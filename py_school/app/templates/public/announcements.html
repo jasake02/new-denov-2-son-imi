@@ -4,6 +4,16 @@
 
 {% block content %}
 <section class="page-header position-relative d-flex align-items-center justify-content-center overflow-hidden" style="min-height:350px; padding-top:80px; background: linear-gradient(135deg, #0f172a, #1e3a5f);">
+    <div class="header-bg position-absolute top-0 start-0 w-100 h-100">
+        <div class="hero-overlay" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(30, 58, 95, 0.68));"></div>
+        {% if settings.announcements_header_media_type == 'video' %}
+            <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+                <source src="{{ settings.announcements_header_media_path }}" type="video/mp4" />
+            </video>
+        {% else %}
+            <div class="w-100 h-100 object-fit-cover" style="background-image:url('{{ settings.announcements_header_media_path or settings.news_header_media_path or settings.hero_media_path }}');background-size:cover;background-position:center;"></div>
+        {% endif %}
+    </div>
     <div class="container position-relative z-2 text-center text-white mt-4">
         <span class="badge rounded-pill px-4 py-2 mb-3 text-uppercase fw-semibold" style="background:rgba(250,204,21,0.15);border:1px solid rgba(250,204,21,0.35);font-size:0.8rem;letter-spacing:2px;color:#facc15;">{{ t('announcements.badge', 'Rasmiy xabarlar', 'Official notices', 'Ofitsialnyye soobshcheniya') }}</span>
         <h1 class="display-4 fw-bolder mb-3">{{ t('announcements.title', "E'lonlar", 'Announcements', 'Obyavleniya') }}</h1>
@@ -60,5 +70,6 @@
     .hover-lift { transition: transform .25s, box-shadow .25s; }
     .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.1) !important; }
     .py-6 { padding-top: 4rem; padding-bottom: 4rem; }
+    html[data-theme='dark'] .hover-lift:hover { box-shadow: 0 18px 48px rgba(2, 6, 23, 0.38) !important; }
 </style>
 {% endblock %}

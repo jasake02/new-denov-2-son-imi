@@ -4,7 +4,7 @@ import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.bootstrap import bootstrap_remote_database, sync_postgres_sequences
+from app.bootstrap import bootstrap_remote_database, ensure_site_settings_schema, sync_postgres_sequences
 from app.database import Base, STATIC_DIR, SessionLocal, engine
 from app.routers import admin, public
 from app.seed import init_db
@@ -18,6 +18,7 @@ def initialize_database() -> None:
         return
 
     Base.metadata.create_all(bind=engine)
+    ensure_site_settings_schema()
     bootstrap_remote_database()
     sync_postgres_sequences()
 
