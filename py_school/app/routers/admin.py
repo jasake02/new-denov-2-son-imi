@@ -4,18 +4,18 @@ import os
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from app.database import TEMPLATES_DIR, get_db
+from app.database import get_db
 from app.dependencies import get_current_admin, require_admin, serializer
 from app.models.models import AdminUser, ContentItem, ContactMessage, Department, News, SiteSetting, Teacher
 from app.services.auth import get_password_hash, verify_password
 from app.services.storage import delete_media, save_upload_file
+from app.template_loader import create_templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+templates = create_templates()
 
 ANNOUNCEMENT_CATEGORIES = {"announcement", "agency"}
 VIDEO_EXTENSIONS = {".mp4", ".webm", ".ogg", ".mov"}

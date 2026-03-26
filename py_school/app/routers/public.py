@@ -1,16 +1,16 @@
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from app.database import TEMPLATES_DIR, get_db
+from app.database import get_db
 from app.dependencies import get_template_context
 from app.models.models import ContactMessage, Department, News, Teacher
+from app.template_loader import create_templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+templates = create_templates()
 
 ANNOUNCEMENT_CATEGORIES = ("announcement", "agency")
 DEPARTMENT_CATEGORY_ALIASES = {"leaders": "leadership", "teachers": "academic", "staff": "support"}
