@@ -6,8 +6,11 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.pool import NullPool
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = BASE_DIR.parent
 APP_DIR = BASE_DIR / "app"
-STATIC_DIR = APP_DIR / "static"
+PUBLIC_DIR = PROJECT_ROOT / "public"
+LEGACY_STATIC_DIR = APP_DIR / "static"
+STATIC_DIR = PUBLIC_DIR / "static" if (PUBLIC_DIR / "static").exists() else LEGACY_STATIC_DIR
 TEMPLATES_DIR = APP_DIR / "templates"
 DATABASE_PATH = BASE_DIR / "school.db"
 

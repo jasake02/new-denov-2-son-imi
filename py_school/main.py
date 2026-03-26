@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -28,7 +29,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="Denov 2 School", lifespan=lifespan)
 
-if STATIC_DIR.exists():
+if STATIC_DIR.exists() and not os.getenv("VERCEL"):
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 app.include_router(public.router)
