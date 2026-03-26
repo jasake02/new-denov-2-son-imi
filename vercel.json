@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "index.py": {
+      "includeFiles": [
+        "py_school/app/templates/**",
+        "py_school/school.db"
+      ],
+      "excludeFiles": "{py_school/venv/**,**/__pycache__/**,**/*.log,**/*.md,**/*.txt}"
+    }
+  }
+}
