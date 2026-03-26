@@ -4,9 +4,11 @@ import os
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
+from app.bootstrap import sync_postgres_sequences
 from app.database import get_db
 from app.dependencies import get_current_admin, require_admin, serializer
 from app.models.models import AdminUser, ContentItem, ContactMessage, Department, News, SiteSetting, Teacher
@@ -39,6 +41,17 @@ CONTENT_SECTION_CONFIG = [
 
 def redirect(url: str) -> RedirectResponse:
     return RedirectResponse(url=url, status_code=303)
+
+
+def commit_with_retry(db: Session, pending_obj=None) -> None:
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        sync_postgres_sequences()
+        if pending_obj is not None:
+            db.add(pending_obj)
+        db.commit()
 
 
 def normalize_text(value: str | None) -> str | None:
@@ -209,7 +222,7 @@ def admin_news_create(
         image_path=image_path,
     )
     db.add(item)
-    db.commit()
+    commit_with_retry(db, item)
     kind = "announcement" if normalized_category == "announcement" else "news"
     return redirect(f"/admin/news?kind={kind}")
 
@@ -247,7 +260,7 @@ def admin_news_edit(
         delete_media(item.image_path)
         item.image_path = save_upload_file(media_file)
 
-    db.commit()
+    commit_with_retry(db)
     kind = "announcement" if normalized_category == "announcement" else "news"
     return redirect(f"/admin/news?kind={kind}")
 
@@ -264,7 +277,7 @@ def admin_news_delete(
     if item:
         delete_media(item.image_path)
         db.delete(item)
-        db.commit()
+        commit_with_retry(db)
     return redirect(f"/admin/news?kind={kind}")
 
 
@@ -309,7 +322,7 @@ def admin_departments_create(
         image_path=image_path,
     )
     db.add(item)
-    db.commit()
+    commit_with_retry(db, item)
     return redirect("/admin/departments")
 
 
@@ -353,7 +366,7 @@ def admin_departments_edit(
         delete_media(item.image_path)
         item.image_path = save_upload_file(media_file)
 
-    db.commit()
+    commit_with_retry(db)
     return redirect("/admin/departments")
 
 
@@ -363,7 +376,7 @@ def admin_departments_delete(request: Request, id: int, admin_id: int = Depends(
     if item:
         delete_media(item.image_path)
         db.delete(item)
-        db.commit()
+        commit_with_retry(db)
     return redirect("/admin/departments")
 
 
@@ -420,7 +433,7 @@ def admin_teachers_create(
         image_path=image_path,
     )
     db.add(item)
-    db.commit()
+    commit_with_retry(db, item)
     return redirect("/admin/teachers")
 
 
@@ -476,7 +489,7 @@ def admin_teachers_edit(
         delete_media(item.image_path)
         item.image_path = save_upload_file(media_file)
 
-    db.commit()
+    commit_with_retry(db)
     return redirect("/admin/teachers")
 
 
@@ -486,7 +499,7 @@ def admin_teachers_delete(request: Request, id: int, admin_id: int = Depends(req
     if item:
         delete_media(item.image_path)
         db.delete(item)
-        db.commit()
+        commit_with_retry(db)
     return redirect("/admin/teachers")
 
 
@@ -508,7 +521,7 @@ def change_pwd_post(
         return redirect("/admin/account/changepassword?error=Eski parol noto'g'ri")
 
     user.password_hash = get_password_hash(new_password)
-    db.commit()
+    commit_with_retry(db)
     return redirect("/admin/account/changepassword?success=Parol muvaffaqiyatli o'zgartirildi")
 
 
@@ -519,7 +532,7 @@ def admin_messages_list(request: Request, admin_id: int = Depends(require_admin)
     for message in unread:
         message.is_read = True
     if unread:
-        db.commit()
+        commit_with_retry(db)
     return templates.TemplateResponse(request=request, name="admin/messages.html", context={"request": request, "items": items})
 
 
@@ -528,7 +541,7 @@ def admin_messages_delete(request: Request, id: int, admin_id: int = Depends(req
     item = db.query(ContactMessage).filter(ContactMessage.id == id).first()
     if item:
         db.delete(item)
-        db.commit()
+        commit_with_retry(db)
     return redirect("/admin/messages")
 
 
@@ -538,7 +551,7 @@ def admin_settings_get(request: Request, admin_id: int = Depends(require_admin),
     if not settings:
         settings = SiteSetting(id=1)
         db.add(settings)
-        db.commit()
+        commit_with_retry(db)
         db.refresh(settings)
     return templates.TemplateResponse(request=request, name="admin/settings.html", context={"request": request, "settings": settings})
 
@@ -629,7 +642,7 @@ async def admin_settings_post(request: Request, admin_id: int = Depends(require_
             if hasattr(settings, media_type_attr):
                 setattr(settings, media_type_attr, detect_media_type(saved_path))
 
-    db.commit()
+    commit_with_retry(db)
     return redirect("/admin/sitesettings")
 
 
@@ -663,7 +676,7 @@ def admin_content_create(
                 value_ru=normalize_text(value_ru),
             )
         )
-        db.commit()
+        commit_with_retry(db)
     return redirect("/admin/content")
 
 
@@ -682,7 +695,7 @@ def admin_content_post(
         item.value_uz = value_uz.strip()
         item.value_en = normalize_text(value_en)
         item.value_ru = normalize_text(value_ru)
-        db.commit()
+        commit_with_retry(db)
     return redirect("/admin/content")
 
 

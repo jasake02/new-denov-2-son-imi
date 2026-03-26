@@ -1,9 +1,11 @@
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
+from app.bootstrap import sync_postgres_sequences
 from app.database import STATIC_DIR, get_db
 from app.dependencies import get_template_context
 from app.models.models import ContactMessage, Department, News, Teacher
@@ -19,6 +21,17 @@ TEACHER_CATEGORY_ALIASES = {"leaders": "leadership", "teachers": "science", "sta
 
 def normalize_public_category(value: str, aliases: dict[str, str]) -> str:
     return aliases.get(value, value)
+
+
+def commit_with_retry(db: Session, pending_obj=None) -> None:
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        sync_postgres_sequences()
+        if pending_obj is not None:
+            db.add(pending_obj)
+        db.commit()
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -178,7 +191,7 @@ def contact_post(
 
     new_message = ContactMessage(full_name=full_name, email=email, message=clean_message)
     db.add(new_message)
-    db.commit()
+    commit_with_retry(db, new_message)
 
     context = get_template_context(request, db)
     context.update({"success": True})
