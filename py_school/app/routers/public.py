@@ -1,10 +1,10 @@
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.database import STATIC_DIR, get_db
 from app.dependencies import get_template_context
 from app.models.models import ContactMessage, Department, News, Teacher
 from app.template_loader import create_templates
@@ -179,7 +179,10 @@ def contact_post(
     new_message = ContactMessage(full_name=full_name, email=email, message=clean_message)
     db.add(new_message)
     db.commit()
-    return RedirectResponse(url="/contact?success=true", status_code=303)
+
+    context = get_template_context(request, db)
+    context.update({"success": True})
+    return templates.TemplateResponse(request=request, name="public/contact.html", context=context)
 
 
 @router.get("/lang/{lang_code}")
@@ -195,6 +198,22 @@ def change_language(lang_code: str, next: str = "/"):
 @router.get("/robots.txt", response_class=PlainTextResponse)
 def robots_txt():
     return "User-agent: *\nAllow: /\nSitemap: /sitemap.xml"
+
+
+@router.get("/favicon.ico", include_in_schema=False)
+def favicon_ico():
+    favicon_path = STATIC_DIR / "images" / "ptma-01.png"
+    if favicon_path.exists():
+        return FileResponse(favicon_path, media_type="image/png")
+    return RedirectResponse(url="/static/images/PIIMALogo.svg", status_code=307)
+
+
+@router.get("/favicon.png", include_in_schema=False)
+def favicon_png():
+    favicon_path = STATIC_DIR / "images" / "ptma-01.png"
+    if favicon_path.exists():
+        return FileResponse(favicon_path, media_type="image/png")
+    return RedirectResponse(url="/static/images/PIIMALogo.svg", status_code=307)
 
 
 @router.get("/sitemap.xml", response_class=PlainTextResponse)

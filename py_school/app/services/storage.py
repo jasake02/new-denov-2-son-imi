@@ -54,10 +54,11 @@ def save_upload_file(upload_file: UploadFile, folder: str = "uploads") -> str:
     content_type = upload_file.content_type or mimetypes.guess_type(upload_file.filename)[0] or "application/octet-stream"
 
     if storage_uses_blob():
+        token = _discover_blob_token()
         file_bytes = upload_file.file.read()
         upload_file.file.seek(0)
 
-        client = BlobClient()
+        client = BlobClient(token=token)
         blob = client.put(
             f"{safe_folder}/{filename}",
             file_bytes,
@@ -84,7 +85,7 @@ def delete_media(path: str | None) -> None:
 
     if is_blob_url(path):
         if delete_blob is not None:
-            delete_blob(path)
+            delete_blob(path, token=_discover_blob_token())
         return
 
     if not is_local_upload_path(path):
