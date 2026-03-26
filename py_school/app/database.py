@@ -16,29 +16,41 @@ DATABASE_PATH = BASE_DIR / "school.db"
 
 
 def _discover_database_env() -> str | None:
+    def is_database_url(value: str | None) -> bool:
+        if not value:
+            return False
+        normalized = value.strip().lower()
+        return normalized.startswith(("postgres://", "postgresql://", "prisma+postgres://", "sqlite:///"))
+
     explicit_keys = (
         "DATABASE_URL",
         "POSTGRES_URL",
-        "POSTGRES_PRISMA_URL",
         "POSTGRES_URL_NON_POOLING",
+        "POSTGRES_PRISMA_URL",
     )
     for key in explicit_keys:
         value = os.getenv(key)
-        if value:
+        if is_database_url(value):
             return value
 
     suffixes = (
         "_DATABASE_URL",
-        "_PRISMA_URL",
         "_URL_NON_POOLING",
         "_POSTGRES_URL",
         "_URL",
+        "_PRISMA_URL",
     )
     preferred_tokens = ("DATABASE", "POSTGRES", "NEON", "STORAGE")
 
     for suffix in suffixes:
         for key, value in os.environ.items():
-            if value and key.endswith(suffix) and any(token in key for token in preferred_tokens):
+            if suffix != "_PRISMA_URL" and "PRISMA" in key:
+                continue
+            if (
+                is_database_url(value)
+                and key.endswith(suffix)
+                and any(token in key for token in preferred_tokens)
+            ):
                 return value
 
     return None
