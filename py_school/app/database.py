@@ -15,6 +15,35 @@ TEMPLATES_DIR = APP_DIR / "templates"
 DATABASE_PATH = BASE_DIR / "school.db"
 
 
+def _discover_database_env() -> str | None:
+    explicit_keys = (
+        "DATABASE_URL",
+        "POSTGRES_URL",
+        "POSTGRES_PRISMA_URL",
+        "POSTGRES_URL_NON_POOLING",
+    )
+    for key in explicit_keys:
+        value = os.getenv(key)
+        if value:
+            return value
+
+    suffixes = (
+        "_DATABASE_URL",
+        "_PRISMA_URL",
+        "_URL_NON_POOLING",
+        "_POSTGRES_URL",
+        "_URL",
+    )
+    preferred_tokens = ("DATABASE", "POSTGRES", "NEON", "STORAGE")
+
+    for suffix in suffixes:
+        for key, value in os.environ.items():
+            if value and key.endswith(suffix) and any(token in key for token in preferred_tokens):
+                return value
+
+    return None
+
+
 def _normalize_database_url(value: str | None) -> str:
     if not value:
         return f"sqlite:///{DATABASE_PATH.as_posix()}"
@@ -28,13 +57,7 @@ def _normalize_database_url(value: str | None) -> str:
         normalized = normalized.replace("postgresql://", "postgresql+psycopg://", 1)
     return normalized
 
-
-SQLALCHEMY_DATABASE_URL = _normalize_database_url(
-    os.getenv("DATABASE_URL")
-    or os.getenv("POSTGRES_URL")
-    or os.getenv("POSTGRES_PRISMA_URL")
-    or os.getenv("POSTGRES_URL_NON_POOLING")
-)
+SQLALCHEMY_DATABASE_URL = _normalize_database_url(_discover_database_env())
 IS_SQLITE = SQLALCHEMY_DATABASE_URL.startswith("sqlite")
 
 engine_kwargs = {"pool_pre_ping": True}

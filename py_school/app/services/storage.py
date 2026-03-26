@@ -21,6 +21,17 @@ except ImportError:
 BLOB_URL_MARKER = ".blob.vercel-storage.com"
 
 
+def _discover_blob_token() -> str | None:
+    direct_value = os.getenv("BLOB_READ_WRITE_TOKEN")
+    if direct_value:
+        return direct_value
+
+    for key, value in os.environ.items():
+        if value and "BLOB_READ_WRITE_TOKEN" in key:
+            return value
+    return None
+
+
 def is_blob_url(path: str | None) -> bool:
     return bool(path and path.startswith("https://") and BLOB_URL_MARKER in path)
 
@@ -30,7 +41,7 @@ def is_local_upload_path(path: str | None) -> bool:
 
 
 def storage_uses_blob() -> bool:
-    return bool(os.getenv("BLOB_READ_WRITE_TOKEN") and BlobClient is not None)
+    return bool(_discover_blob_token() and BlobClient is not None)
 
 
 def save_upload_file(upload_file: UploadFile, folder: str = "uploads") -> str:
