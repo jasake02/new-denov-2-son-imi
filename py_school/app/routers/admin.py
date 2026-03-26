@@ -1,8 +1,6 @@
-import os
-import shutil
-import uuid
 from collections import defaultdict
 from datetime import datetime
+import os
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -10,13 +8,14 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.database import TEMPLATES_DIR, get_db
 from app.dependencies import get_current_admin, require_admin, serializer
 from app.models.models import AdminUser, ContentItem, ContactMessage, Department, News, SiteSetting, Teacher
 from app.services.auth import get_password_hash, verify_password
+from app.services.storage import delete_media, save_upload_file
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 ANNOUNCEMENT_CATEGORIES = {"announcement", "agency"}
 VIDEO_EXTENSIONS = {".mp4", ".webm", ".ogg", ".mov"}
@@ -70,23 +69,9 @@ def normalize_teacher_category(value: str | None) -> str:
 def detect_media_type(file_path: str | None) -> str | None:
     if not file_path:
         return None
-    extension = os.path.splitext(file_path)[1].lower()
+    extension = file_path.rsplit(".", 1)[-1].lower() if "." in file_path else ""
+    extension = f".{extension}" if extension else ""
     return "video" if extension in VIDEO_EXTENSIONS else "image"
-
-
-def save_upload_file(upload_file: UploadFile, folder: str = "uploads") -> str:
-    if not upload_file or not upload_file.filename:
-        return ""
-
-    os.makedirs(f"app/static/{folder}", exist_ok=True)
-    extension = os.path.splitext(upload_file.filename)[1]
-    filename = f"{uuid.uuid4().hex}{extension}"
-    filepath = f"app/static/{folder}/{filename}"
-
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(upload_file.file, buffer)
-
-    return f"/static/{folder}/{filename}"
 
 
 def build_content_sections(items: list[ContentItem]) -> list[dict]:
@@ -134,7 +119,14 @@ def login_post(request: Request, user_name: str = Form(...), password: str = For
 
         response = redirect("/admin/dashboard")
         session_token = serializer.dumps(user.id)
-        response.set_cookie(key="admin_session", value=session_token, httponly=True, max_age=86400)
+        response.set_cookie(
+            key="admin_session",
+            value=session_token,
+            httponly=True,
+            max_age=86400,
+            samesite="lax",
+            secure=bool(os.getenv("VERCEL")) or request.url.scheme == "https",
+        )
         return response
 
     return redirect("/admin/login?error=Noto'g'ri login yoki parol")
@@ -252,6 +244,7 @@ def admin_news_edit(
     item.modified_date = datetime.utcnow()
 
     if media_file and media_file.filename:
+        delete_media(item.image_path)
         item.image_path = save_upload_file(media_file)
 
     db.commit()
@@ -269,6 +262,7 @@ def admin_news_delete(
 ):
     item = db.query(News).filter(News.id == id).first()
     if item:
+        delete_media(item.image_path)
         db.delete(item)
         db.commit()
     return redirect(f"/admin/news?kind={kind}")
@@ -356,6 +350,7 @@ def admin_departments_edit(
     item.modified_date = datetime.utcnow()
 
     if media_file and media_file.filename:
+        delete_media(item.image_path)
         item.image_path = save_upload_file(media_file)
 
     db.commit()
@@ -366,6 +361,7 @@ def admin_departments_edit(
 def admin_departments_delete(request: Request, id: int, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
     item = db.query(Department).filter(Department.id == id).first()
     if item:
+        delete_media(item.image_path)
         db.delete(item)
         db.commit()
     return redirect("/admin/departments")
@@ -477,6 +473,7 @@ def admin_teachers_edit(
     item.modified_date = datetime.utcnow()
 
     if media_file and media_file.filename:
+        delete_media(item.image_path)
         item.image_path = save_upload_file(media_file)
 
     db.commit()
@@ -487,6 +484,7 @@ def admin_teachers_edit(
 def admin_teachers_delete(request: Request, id: int, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
     item = db.query(Teacher).filter(Teacher.id == id).first()
     if item:
+        delete_media(item.image_path)
         db.delete(item)
         db.commit()
     return redirect("/admin/teachers")
@@ -623,6 +621,7 @@ async def admin_settings_post(request: Request, admin_id: int = Depends(require_
     for upload_name, target_attr in upload_fields.items():
         upload = form.get(upload_name)
         if upload and getattr(upload, "filename", ""):
+            delete_media(getattr(settings, target_attr))
             saved_path = save_upload_file(upload)
             setattr(settings, target_attr, saved_path)
 

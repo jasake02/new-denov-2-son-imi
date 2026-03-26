@@ -1,23 +1,49 @@
+import os
 from pathlib import Path
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.pool import NullPool
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+APP_DIR = BASE_DIR / "app"
+STATIC_DIR = APP_DIR / "static"
+TEMPLATES_DIR = APP_DIR / "templates"
 DATABASE_PATH = BASE_DIR / "school.db"
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DATABASE_PATH.as_posix()}"
 
-# Create Database Engine
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+
+def _normalize_database_url(value: str | None) -> str:
+    if not value:
+        return f"sqlite:///{DATABASE_PATH.as_posix()}"
+
+    normalized = value.strip()
+    if normalized.startswith("prisma+postgres://"):
+        normalized = normalized.replace("prisma+postgres://", "postgresql+psycopg://", 1)
+    elif normalized.startswith("postgres://"):
+        normalized = normalized.replace("postgres://", "postgresql+psycopg://", 1)
+    elif normalized.startswith("postgresql://"):
+        normalized = normalized.replace("postgresql://", "postgresql+psycopg://", 1)
+    return normalized
+
+
+SQLALCHEMY_DATABASE_URL = _normalize_database_url(
+    os.getenv("DATABASE_URL")
+    or os.getenv("POSTGRES_URL")
+    or os.getenv("POSTGRES_PRISMA_URL")
+    or os.getenv("POSTGRES_URL_NON_POOLING")
 )
+IS_SQLITE = SQLALCHEMY_DATABASE_URL.startswith("sqlite")
 
-# Session Local class for dependency injection
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine_kwargs = {"pool_pre_ping": True}
+if IS_SQLITE:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    engine_kwargs["poolclass"] = NullPool
 
-# Base class for models
+engine = create_engine(SQLALCHEMY_DATABASE_URL, **engine_kwargs)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()

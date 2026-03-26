@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+jinja2
+python-multipart
+beautifulsoup4
+itsdangerous
+bcrypt
+psycopg[binary]
+vercel

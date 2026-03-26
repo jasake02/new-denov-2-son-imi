@@ -1,3 +1,5 @@
+import os
+
 from itsdangerous import URLSafeSerializer
 
 from fastapi import Depends, HTTPException, Request
@@ -9,7 +11,7 @@ from app.services.content import get_content_translation
 from app.services.localization import get_current_language
 
 # Used for cookie session signing
-SECRET_KEY = "denov2_super_secret_key_change_in_production"
+SECRET_KEY = os.getenv("SECRET_KEY", "denov2_super_secret_key_change_in_production")
 serializer = URLSafeSerializer(SECRET_KEY)
 
 def get_settings(db: Session = Depends(get_db)):
