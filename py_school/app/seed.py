@@ -92,6 +92,8 @@ def init_db(db: Session):
             secret_word_hash=get_password_hash("Denov2-Reset@Key"),
         )
         db.add(admin)
+    elif not admin.secret_word_hash:
+        admin.secret_word_hash = get_password_hash("Denov2-Reset@Key")
 
     def ensure_content(key: str, uz: str, en: str, ru: str):
         if not db.query(ContentItem).filter(ContentItem.key == key).first():

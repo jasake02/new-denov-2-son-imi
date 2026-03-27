@@ -121,8 +121,13 @@ def build_teacher_category_order_map(items: list[Teacher]) -> dict[int, int]:
     return effective_orders
 
 
-def can_edit_code(submitted_phrase: str | None) -> bool:
-    return normalize_text(submitted_phrase) == normalize_text(CODE_EDIT_PHRASE)
+def can_edit_code(admin_user: AdminUser | None, submitted_phrase: str | None) -> bool:
+    normalized_phrase = normalize_text(submitted_phrase)
+    if not normalized_phrase:
+        return False
+    if admin_user and admin_user.secret_word_hash:
+        return verify_password(normalized_phrase, admin_user.secret_word_hash)
+    return normalized_phrase == normalize_text(CODE_EDIT_PHRASE)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -536,7 +541,11 @@ def admin_teachers_delete(request: Request, id: int, admin_id: int = Depends(req
 
 @router.get("/account/changepassword", response_class=HTMLResponse)
 def change_pwd_get(request: Request, admin_id: int = Depends(require_admin), success: str = None, error: str = None):
-    return templates.TemplateResponse(request=request, name="admin/changepassword.html", context={"request": request, "success": success, "error": error})
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/changepassword.html",
+        context={"request": request, "success": success, "error": error},
+    )
 
 
 @router.post("/account/changepassword")
@@ -554,6 +563,30 @@ def change_pwd_post(
     user.password_hash = get_password_hash(new_password)
     commit_with_retry(db)
     return redirect("/admin/account/changepassword?success=Parol muvaffaqiyatli o'zgartirildi")
+
+
+@router.post("/account/changecodephrase")
+def change_code_phrase_post(
+    request: Request,
+    admin_id: int = Depends(require_admin),
+    db: Session = Depends(get_db),
+    password: str = Form(...),
+    new_code_phrase: str = Form(...),
+    confirm_code_phrase: str = Form(...),
+):
+    user = db.query(AdminUser).filter(AdminUser.id == admin_id).first()
+    if not user or not verify_password(password, user.password_hash):
+        return redirect("/admin/account/changepassword?error=Maxsus so'zni o'zgartirish uchun amaldagi parol noto'g'ri")
+
+    if normalize_text(new_code_phrase) is None or len(new_code_phrase.strip()) < 6:
+        return redirect("/admin/account/changepassword?error=Maxsus so'z kamida 6 ta belgidan iborat bo'lsin")
+
+    if new_code_phrase != confirm_code_phrase:
+        return redirect("/admin/account/changepassword?error=Maxsus so'z tasdiqlash bilan mos kelmadi")
+
+    user.secret_word_hash = get_password_hash(new_code_phrase.strip())
+    commit_with_retry(db)
+    return redirect("/admin/account/changepassword?success=Maxsus so'z muvaffaqiyatli yangilandi")
 
 
 @router.get("/messages", response_class=HTMLResponse)
@@ -600,6 +633,7 @@ def admin_settings_get(
 @router.post("/sitesettings")
 async def admin_settings_post(request: Request, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
     settings = db.query(SiteSetting).first()
+    admin_user = db.query(AdminUser).filter(AdminUser.id == admin_id).first()
     if not settings:
         settings = SiteSetting(id=1)
         db.add(settings)
@@ -694,7 +728,7 @@ async def admin_settings_post(request: Request, admin_id: int = Depends(require_
 
     code_locked = False
     if code_changed:
-        if can_edit_code(form.get("code_edit_phrase")):
+        if can_edit_code(admin_user, form.get("code_edit_phrase")):
             settings.custom_css = submitted_custom_css
         else:
             code_locked = True
