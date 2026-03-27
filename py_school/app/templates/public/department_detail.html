@@ -9,6 +9,8 @@
 {% set dept_description = ml(dept, 'description') or '' %}
 {% set dept_subjects = ml(dept, 'subjects') or '' %}
 {% set dept_media = dept.image_path or settings.departments_header_media_path or settings.hero_media_path or '/static/images/PIIMALogo.svg' %}
+{% set primary_phone = settings.footer_phone or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') %}
+{% set hotline_phone = settings.contact_phone_hotline or settings.contact_phone_secondary %}
 
 <section class="immersive-page-header">
     <div class="page-header-media">
@@ -78,9 +80,18 @@
                             <i class="fas fa-phone-alt mt-1"></i>
                             <div>
                                 <strong>{{ t('departments.detail.phone.label', 'Telefon', 'Phone', 'Telefon') }}</strong>
-                                <span>{{ settings.footer_phone or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') }}</span>
+                                <a href="tel:{{ primary_phone }}">{{ primary_phone }}</a>
                             </div>
                         </div>
+                        {% if hotline_phone and hotline_phone != primary_phone %}
+                        <div class="sidebar-list-item">
+                            <i class="fas fa-headset mt-1"></i>
+                            <div>
+                                <strong>{{ t('contact.header.hotline', 'Tezkor aloqa', 'Hotline', 'Goryachaya liniya') }}</strong>
+                                <a href="tel:{{ hotline_phone }}">{{ hotline_phone }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="sidebar-list-item">
                             <i class="fas fa-envelope mt-1"></i>
                             <div>

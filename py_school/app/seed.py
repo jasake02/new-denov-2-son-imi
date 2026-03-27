@@ -51,6 +51,11 @@ def init_db(db: Session):
             footer_address_en="Denov city, Surxandarya region",
             footer_address_ru="Denov, Surxandarya",
             footer_phone="+998-76-228-25-64",
+            contact_phone_secondary="+998-90-123-45-67",
+            contact_phone_hotline="+998-99-777-77-77",
+            contact_hours_uz="Dushanba - Shanba: 08:00 - 18:00",
+            contact_hours_en="Monday - Saturday: 08:00 - 18:00",
+            contact_hours_ru="Ponedelnik - Subbota: 08:00 - 18:00",
             footer_email="info@denov2sonimi.uz",
             footer_bg_color="#111827",
             footer_text_color="#e5e7eb",
@@ -68,6 +73,16 @@ def init_db(db: Session):
             settings.nav_departments_ru = "Otdely"
         if not settings.hero_title_uz or settings.hero_title_uz == "Kelajak sari yorqin qadamlar":
             settings.hero_title_uz = "Denov tuman 2-son ixtisoslashtirilgan maktab-internati"
+        if not settings.contact_phone_secondary:
+            settings.contact_phone_secondary = settings.footer_phone
+        if not settings.contact_phone_hotline:
+            settings.contact_phone_hotline = settings.footer_phone
+        if not settings.contact_hours_uz:
+            settings.contact_hours_uz = "Dushanba - Shanba: 08:00 - 18:00"
+        if not settings.contact_hours_en:
+            settings.contact_hours_en = "Monday - Saturday: 08:00 - 18:00"
+        if not settings.contact_hours_ru:
+            settings.contact_hours_ru = "Ponedelnik - Subbota: 08:00 - 18:00"
 
     admin = db.query(AdminUser).filter(AdminUser.is_active == True).first()
     if not admin:

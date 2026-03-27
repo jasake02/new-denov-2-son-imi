@@ -202,17 +202,43 @@
                 </div>
             </div>
 
-            <h5 class="border-bottom pb-2 mb-4 text-success">Aloqa va ijtimoiy tarmoqlar</h5>
+            <h5 class="border-bottom pb-2 mb-4 text-success">Telefonlar, aloqa va ijtimoiy tarmoqlar</h5>
+            <div class="alert alert-success-subtle border border-success-subtle mb-4">
+                Footer, bog'lanish sahifasi va bo'lim detail sahifasida ko'rinadigan barcha telefonlar shu bo'limdan boshqariladi.
+            </div>
             <div class="row g-4 mb-4">
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">Telefon raqam</label>
+                    <label class="form-label fw-semibold">Asosiy telefon raqam</label>
                     <input type="text" name="footer_phone" class="form-control" value="{{ settings.footer_phone or '' }}">
+                    <small class="text-muted d-block mt-2">Footer va asosiy aloqa bloklarida ishlatiladi.</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Qo'shimcha telefon raqam</label>
+                    <input type="text" name="contact_phone_secondary" class="form-control" value="{{ settings.contact_phone_secondary or '' }}">
+                    <small class="text-muted d-block mt-2">Bog'lanish sahifasidagi ikkinchi aloqa raqami.</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Tezkor aloqa / hotline</label>
+                    <input type="text" name="contact_phone_hotline" class="form-control" value="{{ settings.contact_phone_hotline or '' }}">
+                    <small class="text-muted d-block mt-2">Bo'lim detail va bog'lanish sahifalaridagi tezkor aloqa.</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Ish vaqti (UZ)</label>
+                    <input type="text" name="contact_hours_uz" class="form-control" value="{{ settings.contact_hours_uz or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Ish vaqti (EN)</label>
+                    <input type="text" name="contact_hours_en" class="form-control" value="{{ settings.contact_hours_en or '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Ish vaqti (RU)</label>
+                    <input type="text" name="contact_hours_ru" class="form-control" value="{{ settings.contact_hours_ru or '' }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Pochta</label>
                     <input type="email" name="footer_email" class="form-control" value="{{ settings.footer_email or '' }}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-8">
                     <label class="form-label fw-semibold">Xarita iframe URL</label>
                     <input type="text" name="footer_map_embed_url" class="form-control" value="{{ settings.footer_map_embed_url or '' }}">
                 </div>

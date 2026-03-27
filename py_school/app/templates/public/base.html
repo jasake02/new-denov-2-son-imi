@@ -415,7 +415,19 @@
                         {% if settings.footer_phone %}
                         <li class="d-flex mb-3 align-items-center">
                             <div class="icon-box"><i class="fas fa-phone-alt"></i></div>
-                            <span style="color:rgba(229,231,235,0.65);font-size:0.9rem;">{{ settings.footer_phone }}</span>
+                            <a href="tel:{{ settings.footer_phone }}" style="color:rgba(229,231,235,0.65);font-size:0.9rem;text-decoration:none;">{{ settings.footer_phone }}</a>
+                        </li>
+                        {% endif %}
+                        {% if settings.contact_phone_secondary and settings.contact_phone_secondary != settings.footer_phone %}
+                        <li class="d-flex mb-3 align-items-center">
+                            <div class="icon-box"><i class="fas fa-phone-volume"></i></div>
+                            <a href="tel:{{ settings.contact_phone_secondary }}" style="color:rgba(229,231,235,0.65);font-size:0.9rem;text-decoration:none;">{{ settings.contact_phone_secondary }}</a>
+                        </li>
+                        {% endif %}
+                        {% if settings.contact_phone_hotline and settings.contact_phone_hotline not in [settings.footer_phone, settings.contact_phone_secondary] %}
+                        <li class="d-flex mb-3 align-items-center">
+                            <div class="icon-box"><i class="fas fa-headset"></i></div>
+                            <a href="tel:{{ settings.contact_phone_hotline }}" style="color:rgba(229,231,235,0.65);font-size:0.9rem;text-decoration:none;">{{ settings.contact_phone_hotline }}</a>
                         </li>
                         {% endif %}
                         {% if settings.footer_email %}

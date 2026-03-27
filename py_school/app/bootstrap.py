@@ -21,6 +21,11 @@ SITE_SETTINGS_RUNTIME_COLUMNS = {
     "announcements_header_media_type": "VARCHAR(20)",
     "teachers_header_media_path": "TEXT",
     "teachers_header_media_type": "VARCHAR(20)",
+    "contact_phone_secondary": "TEXT",
+    "contact_phone_hotline": "TEXT",
+    "contact_hours_uz": "TEXT",
+    "contact_hours_en": "TEXT",
+    "contact_hours_ru": "TEXT",
 }
 
 

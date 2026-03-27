@@ -4,6 +4,10 @@
 
 {% block content %}
 {% set page_media = settings.contact_header_media_path or settings.about_image_path or settings.hero_media_path or '/static/images/PIIMALogo.svg' %}
+{% set primary_phone = settings.footer_phone or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') %}
+{% set secondary_phone = settings.contact_phone_secondary %}
+{% set hotline_phone = settings.contact_phone_hotline %}
+{% set contact_hours = sm('contact_hours', t('contact.card.phone.schedule', 'Dushanba - Shanba: 08:00 - 18:00', 'Monday - Saturday: 08:00 - 18:00', 'Ponedelnik - Subbota: 08:00 - 18:00')) %}
 
 <section class="immersive-page-header is-compact">
     <div class="page-header-media">
@@ -31,7 +35,11 @@
                 <div class="header-glance-grid">
                     <article class="header-glance-card">
                         <span class="header-glance-label"><i class="fas fa-phone"></i>{{ t('contact.card.phone.title', 'Telefon raqam', 'Phone number', 'Nomer telefona') }}</span>
-                        <div class="header-glance-value">{{ settings.footer_phone or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') }}</div>
+                        <div class="header-glance-value">{{ primary_phone }}</div>
+                    </article>
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-headset"></i>{{ t('contact.header.hotline', 'Tezkor aloqa', 'Hotline', 'Goryachaya liniya') }}</span>
+                        <div class="header-glance-value">{{ hotline_phone or secondary_phone or primary_phone }}</div>
                     </article>
                     <article class="header-glance-card">
                         <span class="header-glance-label"><i class="fas fa-envelope"></i>{{ t('contact.card.email.title', 'Elektron pochta', 'Email', 'Elektronnaya pochta') }}</span>
@@ -62,8 +70,14 @@
                         <span class="contact-icon"><i class="fas fa-phone-alt"></i></span>
                         <div>
                             <h3 class="mb-2">{{ t('contact.card.phone.title', 'Telefon raqam', 'Phone number', 'Nomer telefona') }}</h3>
-                            <p class="mb-1">{{ settings.footer_phone or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') }}</p>
-                            <p class="mb-0">{{ t('contact.card.phone.schedule', 'Dushanba - Shanba: 08:00 - 18:00', 'Monday - Saturday: 08:00 - 18:00', 'Ponedelnik - Subbota: 08:00 - 18:00') }}</p>
+                            <p class="mb-1"><a href="tel:{{ primary_phone }}">{{ primary_phone }}</a></p>
+                            {% if secondary_phone and secondary_phone != primary_phone %}
+                                <p class="mb-1"><a href="tel:{{ secondary_phone }}">{{ secondary_phone }}</a></p>
+                            {% endif %}
+                            {% if hotline_phone and hotline_phone not in [primary_phone, secondary_phone] %}
+                                <p class="mb-1"><a href="tel:{{ hotline_phone }}">{{ hotline_phone }}</a></p>
+                            {% endif %}
+                            <p class="mb-0">{{ contact_hours }}</p>
                         </div>
                     </div>
                 </article>
