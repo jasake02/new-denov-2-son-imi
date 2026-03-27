@@ -17,7 +17,20 @@ templates = create_templates()
 
 ANNOUNCEMENT_CATEGORIES = ("announcement", "agency")
 DEPARTMENT_CATEGORY_ALIASES = {"leaders": "leadership", "teachers": "academic", "staff": "support"}
-TEACHER_CATEGORY_ALIASES = {"leaders": "leadership", "teachers": "science", "staff": "natural", "primary": "natural"}
+TEACHER_CATEGORY_ALIASES = {
+    "leaders": "leadership",
+    "teachers": "science",
+    "staff": "natural",
+    "primary": "natural",
+    "practical": "creative",
+    "applied": "creative",
+    "creative": "creative",
+    "arts": "creative",
+    "humanities": "humanities",
+    "social": "humanities",
+    "socials": "humanities",
+    "social-humanitarian": "humanities",
+}
 
 
 def normalize_public_category(value: str, aliases: dict[str, str]) -> str:

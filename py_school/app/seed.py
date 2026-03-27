@@ -181,6 +181,8 @@ def init_db(db: Session):
     ensure_content("teachers.category.all", "Barchasi", "All", "Все")
     ensure_content("teachers.category.leadership", "Rahbariyat", "Leadership", "Руководство")
     ensure_content("teachers.category.science", "Aniq fanlar", "Sciences", "Точные науки")
+    ensure_content("teachers.category.creative", "Amaliy va ijodiy fanlar", "Practical and creative subjects", "Практические и творческие предметы")
+    ensure_content("teachers.category.humanities", "Ijtimoiy-gumanitar fanlar", "Social and humanities subjects", "Социально-гуманитарные предметы")
     ensure_content("teachers.category.language", "Tillar", "Languages", "Языки")
     ensure_content("teachers.category.natural", "Tabiiy fanlar", "Natural sciences", "Естественные науки")
     ensure_content("teachers.header.badge", "Pedagogik jamoa", "Teaching team", "Педагогический состав")

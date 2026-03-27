@@ -57,6 +57,8 @@
                             <span class="badge bg-info text-dark">
                                 {% if item.category_key == 'leadership' %}Rahbariyat
                                 {% elif item.category_key == 'science' %}Aniq fanlar
+                                {% elif item.category_key == 'creative' %}Amaliy va ijodiy fanlar
+                                {% elif item.category_key == 'humanities' %}Ijtimoiy-gumanitar fanlar
                                 {% elif item.category_key == 'language' %}Tillar
                                 {% elif item.category_key == 'natural' %}Tabiiy fanlar
                                 {% else %}{{ item.category_key }}{% endif %}
@@ -118,6 +120,8 @@
                         <select class="form-select" name="category_key" required>
                             <option value="leadership" {% if item.category_key == 'leadership' %}selected{% endif %}>Rahbariyat</option>
                             <option value="science" {% if item.category_key == 'science' %}selected{% endif %}>Aniq fanlar</option>
+                            <option value="creative" {% if item.category_key == 'creative' %}selected{% endif %}>Amaliy va ijodiy fanlar</option>
+                            <option value="humanities" {% if item.category_key == 'humanities' %}selected{% endif %}>Ijtimoiy-gumanitar fanlar</option>
                             <option value="language" {% if item.category_key == 'language' %}selected{% endif %}>Tillar</option>
                             <option value="natural" {% if item.category_key == 'natural' %}selected{% endif %}>Tabiiy fanlar</option>
                         </select>
@@ -227,6 +231,8 @@
                         <select class="form-select" name="category_key" required>
                             <option value="leadership">Rahbariyat</option>
                             <option value="science" selected>Aniq fanlar</option>
+                            <option value="creative">Amaliy va ijodiy fanlar</option>
+                            <option value="humanities">Ijtimoiy-gumanitar fanlar</option>
                             <option value="language">Tillar</option>
                             <option value="natural">Tabiiy fanlar</option>
                         </select>

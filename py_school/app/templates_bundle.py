@@ -1593,6 +1593,10 @@ TEMPLATE_BUNDLE = {'admin/base.html': '<!DOCTYPE html>\n'
                         '                            <span class="badge bg-info text-dark">\n'
                         "                                {% if item.category_key == 'leadership' %}Rahbariyat\n"
                         "                                {% elif item.category_key == 'science' %}Aniq fanlar\n"
+                        "                                {% elif item.category_key == 'creative' %}Amaliy va ijodiy "
+                        'fanlar\n'
+                        "                                {% elif item.category_key == 'humanities' "
+                        '%}Ijtimoiy-gumanitar fanlar\n'
                         "                                {% elif item.category_key == 'language' %}Tillar\n"
                         "                                {% elif item.category_key == 'natural' %}Tabiiy fanlar\n"
                         '                                {% else %}{{ item.category_key }}{% endif %}\n'
@@ -1668,6 +1672,10 @@ TEMPLATE_BUNDLE = {'admin/base.html': '<!DOCTYPE html>\n'
                         "'leadership' %}selected{% endif %}>Rahbariyat</option>\n"
                         '                            <option value="science" {% if item.category_key == \'science\' '
                         '%}selected{% endif %}>Aniq fanlar</option>\n'
+                        '                            <option value="creative" {% if item.category_key == \'creative\' '
+                        '%}selected{% endif %}>Amaliy va ijodiy fanlar</option>\n'
+                        '                            <option value="humanities" {% if item.category_key == '
+                        "'humanities' %}selected{% endif %}>Ijtimoiy-gumanitar fanlar</option>\n"
                         '                            <option value="language" {% if item.category_key == \'language\' '
                         '%}selected{% endif %}>Tillar</option>\n'
                         '                            <option value="natural" {% if item.category_key == \'natural\' '
@@ -1804,6 +1812,8 @@ TEMPLATE_BUNDLE = {'admin/base.html': '<!DOCTYPE html>\n'
                         '                        <select class="form-select" name="category_key" required>\n'
                         '                            <option value="leadership">Rahbariyat</option>\n'
                         '                            <option value="science" selected>Aniq fanlar</option>\n'
+                        '                            <option value="creative">Amaliy va ijodiy fanlar</option>\n'
+                        '                            <option value="humanities">Ijtimoiy-gumanitar fanlar</option>\n'
                         '                            <option value="language">Tillar</option>\n'
                         '                            <option value="natural">Tabiiy fanlar</option>\n'
                         '                        </select>\n'
@@ -4108,6 +4118,13 @@ TEMPLATE_BUNDLE = {'admin/base.html': '<!DOCTYPE html>\n'
                          '            <a href="/teachers?category=science" class="premium-filter-chip {% if category '
                          '== \'science\' %}active{% endif %}">{{ t(\'teachers.category.science\', \'Aniq fanlar\', '
                          "'Sciences', 'Tochnyye nauki') }}</a>\n"
+                         '            <a href="/teachers?category=creative" class="premium-filter-chip {% if category '
+                         '== \'creative\' %}active{% endif %}">{{ t(\'teachers.category.creative\', \'Amaliy va ijodiy '
+                         "fanlar', 'Practical and creative subjects', 'Практические и творческие предметы') }}</a>\n"
+                         '            <a href="/teachers?category=humanities" class="premium-filter-chip {% if '
+                         'category == \'humanities\' %}active{% endif %}">{{ t(\'teachers.category.humanities\', '
+                         "'Ijtimoiy-gumanitar fanlar', 'Social and humanities subjects', 'Социально-гуманитарные "
+                         "предметы') }}</a>\n"
                          '            <a href="/teachers?category=language" class="premium-filter-chip {% if category '
                          '== \'language\' %}active{% endif %}">{{ t(\'teachers.category.language\', \'Tillar\', '
                          "'Languages', 'Yazyki') }}</a>\n"
