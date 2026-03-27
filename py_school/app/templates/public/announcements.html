@@ -3,73 +3,98 @@
 {% block title %}{{ t('announcements.title', "E'lonlar", 'Announcements', 'Obyavleniya') }} - {{ sm('school_name', 'Denov 2-son Maktab') }}{% endblock %}
 
 {% block content %}
-<section class="page-header position-relative d-flex align-items-center justify-content-center overflow-hidden" style="min-height:350px; padding-top:80px; background: linear-gradient(135deg, #0f172a, #1e3a5f);">
-    <div class="header-bg position-absolute top-0 start-0 w-100 h-100">
-        <div class="hero-overlay" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(30, 58, 95, 0.68));"></div>
-        {% if settings.announcements_header_media_type == 'video' %}
-            <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+{% set page_media = settings.announcements_header_media_path or settings.news_header_media_path or settings.hero_media_path or '/static/images/PIIMALogo.svg' %}
+{% set lead_announcement = announcements[0] if announcements else None %}
+{% set other_announcements = announcements[1:] if announcements|length > 1 else [] %}
+
+<section class="immersive-page-header is-compact">
+    <div class="page-header-media">
+        {% if settings.announcements_header_media_type == 'video' and settings.announcements_header_media_path %}
+            <video autoplay muted loop playsinline>
                 <source src="{{ settings.announcements_header_media_path }}" type="video/mp4" />
             </video>
         {% else %}
-            <div class="w-100 h-100 object-fit-cover" style="background-image:url('{{ settings.announcements_header_media_path or settings.news_header_media_path or settings.hero_media_path }}');background-size:cover;background-position:center;"></div>
+            <div class="media-fill" style="background-image:url('{{ page_media }}');"></div>
         {% endif %}
     </div>
-    <div class="container position-relative z-2 text-center text-white mt-4">
-        <span class="badge rounded-pill px-4 py-2 mb-3 text-uppercase fw-semibold" style="background:rgba(250,204,21,0.15);border:1px solid rgba(250,204,21,0.35);font-size:0.8rem;letter-spacing:2px;color:#facc15;">{{ t('announcements.badge', 'Rasmiy xabarlar', 'Official notices', 'Ofitsialnyye soobshcheniya') }}</span>
-        <h1 class="display-4 fw-bolder mb-3">{{ t('announcements.title', "E'lonlar", 'Announcements', 'Obyavleniya') }}</h1>
-        <p class="lead opacity-75 mb-4">{{ t('announcements.subtitle', "Maktabimizning so'nggi e'lon va xabarlari", 'Latest announcements and notices from our school', 'Posledniye obyavleniya i soobshcheniya nashchey shkoly') }}</p>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center mb-0 bg-transparent p-0">
-                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">{{ t('general.home', 'Bosh sahifa', 'Home', 'Glavnaya') }}</a></li>
-                <li class="breadcrumb-item active text-white">{{ t('announcements.title', "E'lonlar", 'Announcements', 'Obyavleniya') }}</li>
-            </ol>
-        </nav>
-    </div>
-</section>
-
-<section class="py-6 bg-light">
-    <div class="container">
-        {% if announcements %}
-        <div class="row g-4">
-            {% for item in announcements %}
-            <div class="col-lg-8 mx-auto">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden hover-lift">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column flex-md-row">
-                            <div class="d-flex flex-column align-items-center justify-content-start p-4 text-white" style="background:linear-gradient(180deg, var(--primary,#1e293b), var(--primary-dark,#0f172a)); min-width:90px;">
-                                <span class="display-5 fw-bolder lh-1">{{ item.created_date.strftime('%d') }}</span>
-                                <span class="text-uppercase fw-bold small opacity-75">{{ item.created_date.strftime('%b') }}</span>
-                                <span class="opacity-50 small">{{ item.created_date.strftime('%Y') }}</span>
-                            </div>
-                            <div class="p-4 flex-grow-1">
-                                <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                                    <span class="badge bg-warning text-dark rounded-pill px-3 fw-semibold"><i class="fas fa-bell me-1"></i> {{ t('home.announcements.badge', "E'lon", 'Announcement', 'Obyavleniye') }}</span>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ t('news.category.announcement', "E'lonlar", 'Announcements', 'Obyavleniya') }}</span>
-                                </div>
-                                <h4 class="fw-bold text-dark mb-2">{{ ml(item, 'title') }}</h4>
-                                <div class="text-muted" style="font-size:0.95rem;line-height:1.7;">{{ ml(item, 'content')|striptags|truncate(300) }}</div>
-                                <a href="/news/{{ item.id }}" class="btn btn-sm btn-outline-primary rounded-pill mt-3 px-4">{{ t('announcements.more', "Batafsil o'qish", 'Read more', 'Chitat dalej') }} <i class="fas fa-arrow-right ms-1"></i></a>
-                            </div>
+    <div class="page-header-overlay"></div>
+    <div class="container position-relative z-2">
+        <div class="page-header-panel">
+            <div class="page-header-grid">
+                <div>
+                    <span class="page-header-kicker"><i class="fas fa-bullhorn"></i>{{ t('announcements.badge', 'Rasmiy xabarlar', 'Official notices', 'Ofitsialnyye soobshcheniya') }}</span>
+                    <h1 class="page-header-title">{{ t('announcements.title', "E'lonlar", 'Announcements', 'Obyavleniya') }}</h1>
+                    <p class="page-header-subtitle">{{ t('announcements.subtitle', "O'quvchi va ota-onalar uchun eng muhim xabarlar bir joyga jamlangan.", 'The most important notices for students and parents are gathered in one place.', 'Samyye vazhnyye soobshcheniya dlya uchenikov i roditeley sobrany v odnom meste.') }}</p>
+                    <ol class="page-breadcrumb">
+                        <li><a href="/">{{ t('general.home', 'Bosh sahifa', 'Home', 'Glavnaya') }}</a></li>
+                        <li>{{ t('announcements.title', "E'lonlar", 'Announcements', 'Obyavleniya') }}</li>
+                    </ol>
+                </div>
+                <div class="header-glance-grid">
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-bell"></i>{{ t('announcements.header.count_label', 'Jami e\'lonlar', 'Total announcements', 'Vsego obyavleniy') }}</span>
+                        <div class="header-glance-value header-glance-stat">{{ announcements|length }}</div>
+                    </article>
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-clock"></i>{{ t('announcements.header.latest_label', 'Oxirgi signal', 'Latest signal', 'Posledniy signal') }}</span>
+                        <div class="header-glance-value">
+                            {% if lead_announcement %}
+                                {{ lead_announcement.created_date.strftime('%d.%m.%Y') }}
+                            {% else %}
+                                {{ t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') }}
+                            {% endif %}
                         </div>
-                    </div>
+                    </article>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div class="text-center py-6">
-            <i class="fas fa-bell-slash text-muted mb-4" style="font-size:5rem; opacity:0.2;"></i>
-            <h4 class="text-muted fw-light">{{ t('announcements.empty.title', "Hozircha e'lonlar yo'q", 'No announcements yet', 'Obyavleniy poka net') }}</h4>
-            <p class="text-muted">{{ t('announcements.empty.description', "Yangi e'lonlar admin panel orqali qo'shiladi", 'New announcements will be added from the admin panel', 'Novyye obyavleniya budut dobavleny cherez admin panel') }}</p>
-        </div>
-        {% endif %}
     </div>
 </section>
 
-<style>
-    .hover-lift { transition: transform .25s, box-shadow .25s; }
-    .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.1) !important; }
-    .py-6 { padding-top: 4rem; padding-bottom: 4rem; }
-    html[data-theme='dark'] .hover-lift:hover { box-shadow: 0 18px 48px rgba(2, 6, 23, 0.38) !important; }
-</style>
+<section class="page-section-shell">
+    <div class="container">
+        {% if lead_announcement %}
+            <div class="feed-grid">
+                <article class="feed-card feed-card-feature">
+                    <div class="feed-card-media">
+                        {% if lead_announcement.image_path and not (lead_announcement.image_path.endswith('.mp4') or lead_announcement.image_path.endswith('.webm') or lead_announcement.image_path.endswith('.ogg')) %}
+                            <img src="{{ lead_announcement.image_path }}" alt="{{ ml(lead_announcement, 'title') }}">
+                        {% else %}
+                            <div class="feature-news-fallback h-100"><i class="fas fa-bell"></i></div>
+                        {% endif %}
+                    </div>
+                    <div class="feed-card-body d-flex flex-column justify-content-center">
+                        <div class="feed-meta">
+                            <span class="date-pill"><i class="fas fa-calendar-day"></i>{{ lead_announcement.created_date.strftime('%d.%m.%Y') }}</span>
+                            <span class="soft-chip soft-chip-warm">{{ t('home.announcements.badge', "E'lon", 'Announcement', 'Obyavleniye') }}</span>
+                        </div>
+                        <h3>{{ ml(lead_announcement, 'title') }}</h3>
+                        <p>{{ (ml(lead_announcement, 'content') or '')|striptags|truncate(260) }}</p>
+                        <a href="/news/{{ lead_announcement.id }}" class="feed-card-link">{{ t('announcements.more', "Batafsil o'qish", 'Read more', 'Chitat dalej') }} <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+
+                {% for item in other_announcements %}
+                    <article class="feed-card">
+                        <div class="feed-card-body">
+                            <div class="feed-meta">
+                                <span class="date-pill">{{ item.created_date.strftime('%d.%m.%Y') }}</span>
+                                <span class="soft-chip soft-chip-warm">{{ t('home.announcements.badge', "E'lon", 'Announcement', 'Obyavleniye') }}</span>
+                            </div>
+                            <h3>{{ ml(item, 'title') }}</h3>
+                            <p>{{ (ml(item, 'content') or '')|striptags|truncate(170) }}</p>
+                            <a href="/news/{{ item.id }}" class="feed-card-link">{{ t('announcements.more', "Batafsil o'qish", 'Read more', 'Chitat dalej') }} <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-premium-state">
+                <i class="fas fa-bell-slash"></i>
+                <h3>{{ t('announcements.empty.title', "Hozircha e'lonlar yo'q", 'No announcements yet', 'Obyavleniy poka net') }}</h3>
+                <p class="mb-0 text-muted">{{ t('announcements.empty.description', "Yangi e'lonlar admin panel orqali qo'shiladi.", 'New announcements will be added from the admin panel.', 'Novyye obyavleniya budut dobavleny cherez admin panel.') }}</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

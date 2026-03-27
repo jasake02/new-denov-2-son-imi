@@ -3,111 +3,123 @@
 {% block title %}{{ t('nav.news', settings.nav_news_uz, settings.nav_news_en, settings.nav_news_ru) }} - {{ sm('school_name', 'Denov 2-son Maktab') }}{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<section class="page-header position-relative d-flex align-items-center justify-content-center overflow-hidden" style="min-height: 350px; padding-top: 80px;">
-    <div class="header-bg position-absolute top-0 start-0 w-100 h-100">
-        <div class="hero-overlay"></div>
-        {% if settings.news_header_media_type == 'video' %}
-            <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+{% set page_media = settings.news_header_media_path or settings.hero_media_path or settings.about_image_path or '/static/images/PIIMALogo.svg' %}
+{% set lead_news = news_list[0] if news_list else None %}
+{% set other_news = news_list[1:] if news_list|length > 1 else [] %}
+
+<section class="immersive-page-header is-compact">
+    <div class="page-header-media">
+        {% if settings.news_header_media_type == 'video' and settings.news_header_media_path %}
+            <video autoplay muted loop playsinline>
                 <source src="{{ settings.news_header_media_path }}" type="video/mp4" />
             </video>
         {% else %}
-            <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ settings.news_header_media_path or settings.hero_media_path }}'); background-size: cover; background-position: center;"></div>
+            <div class="media-fill" style="background-image:url('{{ page_media }}');"></div>
         {% endif %}
     </div>
-    <div class="container position-relative z-2 text-center text-white mt-5">
-        <h1 class="display-3 fw-bolder mb-3 text-shadow">{{ t('nav.news', settings.nav_news_uz, settings.nav_news_en, settings.nav_news_ru) }}</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center justify-content-center mb-0 bg-transparent p-0">
-                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none hover-white">{{ t('nav.home', settings.nav_home_uz, settings.nav_home_en, settings.nav_home_ru) }}</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">{{ t('nav.news', settings.nav_news_uz, settings.nav_news_en, settings.nav_news_ru) }}</li>
-            </ol>
-        </nav>
-    </div>
-</section>
-
-<!-- News Listing -->
-<section class="py-6 bg-light">
-    <div class="container">
-        <!-- Filter Tabs -->
-        <div class="row mb-5">
-            <div class="col-12 text-center">
-                <div class="btn-group shadow-sm bg-white p-1 rounded-pill" role="group">
-                    <a href="/news?category=all" class="btn rounded-pill px-4 py-2 {% if category == 'all' %}btn-primary fw-bold text-white{% else %}btn-link text-dark text-decoration-none{% endif %}">{{ t('news.category.all', 'Barchasi', 'All', 'Vse') }}</a>
-                    <a href="/news?category=school" class="btn rounded-pill px-4 py-2 {% if category == 'school' %}btn-primary fw-bold text-white{% else %}btn-link text-dark text-decoration-none{% endif %}">{{ t('news.category.school', 'Maktab', 'School', 'Shkola') }}</a>
-                    <a href="/news?category=announcement" class="btn rounded-pill px-4 py-2 {% if category == 'announcement' %}btn-primary fw-bold text-white{% else %}btn-link text-dark text-decoration-none{% endif %}">{{ t('news.category.announcement', "E'lonlar", 'Announcements', 'Obyavleniya') }}</a>
+    <div class="page-header-overlay"></div>
+    <div class="container position-relative z-2">
+        <div class="page-header-panel">
+            <div class="page-header-grid">
+                <div>
+                    <span class="page-header-kicker"><i class="fas fa-newspaper"></i>{{ t('news.header.kicker', 'Media va yangiliklar', 'Media and news', 'Media i novosti') }}</span>
+                    <h1 class="page-header-title">{{ t('nav.news', settings.nav_news_uz, settings.nav_news_en, settings.nav_news_ru) }}</h1>
+                    <p class="page-header-subtitle">{{ t('news.header.subtitle', "Maktab hayoti, yutuqlar va muhim voqealarni bir joyda kuzating.", 'Follow school life, achievements and important events in one place.', 'Sledite za zhiznyu shkoly, dostizheniyami i vazhnymi sobytiyami v odnom meste.') }}</p>
+                    <ol class="page-breadcrumb">
+                        <li><a href="/">{{ t('nav.home', settings.nav_home_uz, settings.nav_home_en, settings.nav_home_ru) }}</a></li>
+                        <li>{{ t('nav.news', settings.nav_news_uz, settings.nav_news_en, settings.nav_news_ru) }}</li>
+                    </ol>
+                </div>
+                <div class="header-glance-grid">
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-layer-group"></i>{{ t('news.header.card.category', 'Tanlangan bo\'lim', 'Selected category', 'Vybrannaya kategoriya') }}</span>
+                        <div class="header-glance-value">{{ t('news.category.' ~ category, category|capitalize, category|capitalize, category|capitalize) }}</div>
+                    </article>
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-signal"></i>{{ t('news.header.card.count', 'Topilgan materiallar', 'Found items', 'Naydennyye materialy') }}</span>
+                        <div class="header-glance-value header-glance-stat">{{ news_list|length }}</div>
+                    </article>
                 </div>
             </div>
         </div>
-
-        <div class="row g-4">
-            {% if news_list %}
-                {% for news in news_list %}
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="news-card card border-0 bg-white rounded-4 overflow-hidden shadow-sm hover-shadow-xl transition-all h-100">
-                        <a href="/news/{{ news.id }}" class="text-decoration-none">
-                            <div class="card-img-wrapper position-relative overflow-hidden" style="height: 240px;">
-                                {% if news.image_path %}
-                                    {% if news.image_path.endswith('.mp4') or news.image_path.endswith('.webm') or news.image_path.endswith('.ogg') %}
-                                        <video class="w-100 h-100 object-fit-cover transition-scale" autoplay muted loop playsinline>
-                                            <source src="{{ news.image_path }}" type="video/mp4" />
-                                        </video>
-                                    {% else %}
-                                        <img src="{{ news.image_path }}" class="w-100 h-100 object-fit-cover transition-scale" alt="News Image">
-                                    {% endif %}
-                                {% else %}
-                                    <div class="w-100 h-100 bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-image text-muted fs-1 opacity-25"></i>
-                                    </div>
-                                {% endif %}
-                                <div class="overlay-gradient position-absolute bottom-0 start-0 w-100 h-50"></div>
-                            </div>
-                        </a>
-                        
-                        <div class="card-body p-4 position-relative">
-                            <!-- Floating Date -->
-                            <div class="position-absolute align-items-center justify-content-center d-flex flex-column bg-primary text-white shadow-sm rounded-3" style="top: -20px; right: 24px; width: 50px; height: 50px;">
-                                <span class="fs-4 fw-bolder lh-1">{{ news.created_date.strftime('%d') }}</span>
-                                <span class="fs-8 text-uppercase">{{ news.created_date.strftime('%b') }}</span>
-                            </div>
-                            
-                            {% set news_category_key = 'announcement' if news.category_key in ['announcement', 'agency'] else news.category_key %}
-                            <span class="badge bg-light text-primary rounded-pill mb-3 px-3 py-1 fw-semibold border border-primary border-opacity-10">{{ t('news.category.' ~ news_category_key, news_category_key|capitalize, news_category_key|capitalize, news_category_key|capitalize) }}</span>
-                            
-                            <h4 class="card-title fw-bold mb-3 text-dark line-clamp-2">
-                                <a href="/news/{{ news.id }}" class="text-dark text-decoration-none hover-text-primary transition-color">
-                                    {% if lang == 'en' and news.title_en %}{{ news.title_en }}{% elif lang == 'ru' and news.title_ru %}{{ news.title_ru }}{% else %}{{ news.title_uz }}{% endif %}
-                                </a>
-                            </h4>
-                            <div class="card-text text-muted mb-4 line-clamp-3 fs-6">
-                                {% if lang == 'en' and news.content_en %}{{ news.content_en|striptags|truncate(120) }}{% elif lang == 'ru' and news.content_ru %}{{ news.content_ru|striptags|truncate(120) }}{% else %}{{ news.content_uz|striptags|truncate(120) }}{% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="card-footer bg-transparent border-top border-light px-4 py-3 mt-auto d-flex justify-content-between align-items-center">
-                            <a href="/news/{{ news.id }}" class="text-primary fw-semibold text-decoration-none icon-link icon-link-hover">
-                                {{ t('general.details', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right ms-1"></i>
-                            </a>
-                            <div class="text-muted fs-7">
-                                <i class="fas fa-clock me-1"></i> {{ news.created_date.strftime('%H:%M') }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="col-12 text-center py-5">
-                    <i class="fas fa-box-open text-muted opacity-25" style="font-size: 5rem;"></i>
-                    <h3 class="mt-4 text-muted">{{ t('news.empty.title', 'Yangiliklar topilmadi.', 'No news found.', 'Novosti ne naydeny.') }}</h3>
-                </div>
-            {% endif %}
-        </div>
     </div>
 </section>
 
-<style>
-    .hover-text-primary:hover { color: var(--primary) !important; }
-    .transition-color { transition: color 0.3s ease; }
-    .fs-8 { font-size: 0.75rem; }
-</style>
+<div class="floating-filter-wrap">
+    <div class="container">
+        <div class="floating-filter-bar">
+            <a href="/news?category=all" class="premium-filter-chip {% if category == 'all' %}active{% endif %}">{{ t('news.category.all', 'Barchasi', 'All', 'Vse') }}</a>
+            <a href="/news?category=school" class="premium-filter-chip {% if category == 'school' %}active{% endif %}">{{ t('news.category.school', 'Maktab', 'School', 'Shkola') }}</a>
+            <a href="/news?category=announcement" class="premium-filter-chip {% if category == 'announcement' %}active{% endif %}">{{ t('news.category.announcement', "E'lonlar", 'Announcements', 'Obyavleniya') }}</a>
+        </div>
+    </div>
+</div>
+
+<section class="page-section-shell">
+    <div class="container">
+        {% if lead_news %}
+            <div class="feed-grid mb-4">
+                <article class="feed-card feed-card-feature">
+                    <div class="feed-card-media">
+                        {% if lead_news.image_path %}
+                            {% if lead_news.image_path.endswith('.mp4') or lead_news.image_path.endswith('.webm') or lead_news.image_path.endswith('.ogg') %}
+                                <video autoplay muted loop playsinline>
+                                    <source src="{{ lead_news.image_path }}" type="video/mp4" />
+                                </video>
+                            {% else %}
+                                <img src="{{ lead_news.image_path }}" alt="{{ ml(lead_news, 'title') }}">
+                            {% endif %}
+                        {% else %}
+                            <div class="feature-news-fallback h-100"><i class="fas fa-newspaper"></i></div>
+                        {% endif %}
+                    </div>
+                    <div class="feed-card-body d-flex flex-column justify-content-center">
+                        {% set lead_category = 'announcement' if lead_news.category_key in ['announcement', 'agency'] else lead_news.category_key %}
+                        <div class="feed-meta">
+                            <span class="date-pill"><i class="fas fa-calendar-day"></i>{{ lead_news.created_date.strftime('%d.%m.%Y') }}</span>
+                            <span class="soft-chip">{{ t('news.category.' ~ lead_category, lead_category|capitalize, lead_category|capitalize, lead_category|capitalize) }}</span>
+                        </div>
+                        <h3>{{ ml(lead_news, 'title') }}</h3>
+                        <p>{{ (ml(lead_news, 'content') or '')|striptags|truncate(260) }}</p>
+                        <a href="/news/{{ lead_news.id }}" class="feed-card-link">{{ t('general.details', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </article>
+
+                {% for news in other_news %}
+                    {% set news_category_key = 'announcement' if news.category_key in ['announcement', 'agency'] else news.category_key %}
+                    <article class="feed-card">
+                        <div class="feed-card-media">
+                            {% if news.image_path %}
+                                {% if news.image_path.endswith('.mp4') or news.image_path.endswith('.webm') or news.image_path.endswith('.ogg') %}
+                                    <video autoplay muted loop playsinline>
+                                        <source src="{{ news.image_path }}" type="video/mp4" />
+                                    </video>
+                                {% else %}
+                                    <img src="{{ news.image_path }}" alt="{{ ml(news, 'title') }}">
+                                {% endif %}
+                            {% else %}
+                                <div class="feature-news-fallback h-100"><i class="fas fa-image"></i></div>
+                            {% endif %}
+                        </div>
+                        <div class="feed-card-body">
+                            <div class="feed-meta">
+                                <span class="date-pill">{{ news.created_date.strftime('%d.%m.%Y') }}</span>
+                                <span class="soft-chip">{{ t('news.category.' ~ news_category_key, news_category_key|capitalize, news_category_key|capitalize, news_category_key|capitalize) }}</span>
+                            </div>
+                            <h3>{{ ml(news, 'title') }}</h3>
+                            <p>{{ (ml(news, 'content') or '')|striptags|truncate(150) }}</p>
+                            <a href="/news/{{ news.id }}" class="feed-card-link">{{ t('general.details', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-premium-state">
+                <i class="fas fa-newspaper"></i>
+                <h3>{{ t('news.empty.title', 'Yangiliklar topilmadi.', 'No news found.', 'Novosti ne naydeny.') }}</h3>
+                <p class="mb-0 text-muted">{{ t('news.empty.description', "Yangi materiallar qo'shilgach shu yerda ko'rinadi.", 'New materials will appear here once added.', 'Novyye materialy poyavyatsya zdes, kak tolko budut dobavleny.') }}</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

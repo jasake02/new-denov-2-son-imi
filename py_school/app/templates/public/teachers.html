@@ -3,123 +3,92 @@
 {% block title %}{{ t('teachers.title', 'Bizning ustozlar', 'Our teachers', 'Nashi uchitelya') }} - {{ sm('school_name', 'Denov 2-son Maktab') }}{% endblock %}
 
 {% block content %}
-<section class="page-header position-relative d-flex align-items-center justify-content-center overflow-hidden" style="min-height:380px; padding-top:80px; background: linear-gradient(135deg, var(--primary-dark, #0f172a), var(--primary, #1e293b));">
-    <div class="header-bg position-absolute top-0 start-0 w-100 h-100">
-        <div class="hero-overlay" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(30, 41, 59, 0.58));"></div>
-        {% if settings.teachers_header_media_type == 'video' %}
-            <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+{% set page_media = settings.teachers_header_media_path or settings.about_image_path or settings.hero_media_path or '/static/images/PIIMALogo.svg' %}
+
+<section class="immersive-page-header is-compact">
+    <div class="page-header-media">
+        {% if settings.teachers_header_media_type == 'video' and settings.teachers_header_media_path %}
+            <video autoplay muted loop playsinline>
                 <source src="{{ settings.teachers_header_media_path }}" type="video/mp4" />
             </video>
         {% else %}
-            <div class="w-100 h-100 object-fit-cover" style="background-image:url('{{ settings.teachers_header_media_path or settings.about_image_path or settings.hero_media_path }}');background-size:cover;background-position:center;"></div>
+            <div class="media-fill" style="background-image:url('{{ page_media }}');"></div>
         {% endif %}
     </div>
-    <div class="container position-relative z-2 text-center text-white mt-4">
-        <span class="badge rounded-pill px-4 py-2 mb-3 text-uppercase fw-semibold" style="background:rgba(14,165,233,0.25);border:1px solid rgba(14,165,233,0.4);font-size:0.8rem;letter-spacing:2px;">{{ t('teachers.header.badge', 'Pedagogik jamoa', 'Teaching team', 'Pedagogicheskiy sostav') }}</span>
-        <h1 class="display-4 fw-bolder mb-3">{{ t('teachers.title', 'Bizning ustozlar', 'Our teachers', 'Nashi uchitelya') }}</h1>
-        <p class="lead opacity-75 mb-4">{{ t('teachers.subtitle', "Malakali va tajribali pedagoglar jamoasi", 'A team of qualified and experienced educators', 'Komanda kvalifitsirovannykh i opytnykh pedagogov') }}</p>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center mb-0 bg-transparent p-0">
-                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">{{ t('general.home', 'Bosh sahifa', 'Home', 'Glavnaya') }}</a></li>
-                <li class="breadcrumb-item active text-white">{{ t('teachers.title', 'Bizning ustozlar', 'Our teachers', 'Nashi uchitelya') }}</li>
-            </ol>
-        </nav>
-    </div>
-</section>
-
-<section class="bg-light py-4 border-bottom sticky-top" style="top:70px;z-index:100;">
-    <div class="container">
-        <div class="d-flex gap-2 flex-wrap justify-content-center">
-            <a href="/teachers?category=all" class="btn btn-sm rounded-pill px-4 fw-semibold {% if category == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ t('teachers.category.all', 'Barchasi', 'All', 'Vse') }}</a>
-            <a href="/teachers?category=leadership" class="btn btn-sm rounded-pill px-4 fw-semibold {% if category == 'leadership' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ t('teachers.category.leadership', 'Rahbariyat', 'Leadership', 'Rukovodstvo') }}</a>
-            <a href="/teachers?category=science" class="btn btn-sm rounded-pill px-4 fw-semibold {% if category == 'science' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ t('teachers.category.science', 'Aniq fanlar', 'Sciences', 'Tochnyye nauki') }}</a>
-            <a href="/teachers?category=language" class="btn btn-sm rounded-pill px-4 fw-semibold {% if category == 'language' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ t('teachers.category.language', 'Tillar', 'Languages', 'Yazyki') }}</a>
-            <a href="/teachers?category=natural" class="btn btn-sm rounded-pill px-4 fw-semibold {% if category == 'natural' %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ t('teachers.category.natural', "Tabiiy fanlar", 'Natural sciences', 'Yestestvennyye nauki') }}</a>
-        </div>
-    </div>
-</section>
-
-<section class="py-6 bg-white">
-    <div class="container">
-        {% if teachers %}
-        <div class="row g-4">
-            {% for teacher in teachers %}
-            {% set teacher_name = teacher.first_name ~ ' ' ~ teacher.last_name ~ (' ' ~ teacher.middle_name if teacher.middle_name else '') %}
-            {% set teacher_bio = ml(teacher, 'bio') or '' %}
-            {% set teacher_achievements = ml(teacher, 'achievements') or '' %}
-            <div class="col-xl-4 col-md-6">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 teacher-card">
-                    <div class="position-relative" style="height: 320px; background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
-                        {% if teacher.image_path %}
-                        <img src="{{ teacher.image_path }}" class="w-100 h-100" alt="{{ teacher_name }}" style="object-fit: cover; object-position: top;">
-                        {% else %}
-                        <div class="w-100 h-100 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-user-tie text-white opacity-25" style="font-size:5rem;"></i>
-                        </div>
-                        {% endif %}
-                        <div class="position-absolute top-0 start-0 w-100 p-3 d-flex justify-content-between align-items-start">
-                            <span class="badge bg-white text-dark rounded-pill px-3 py-2">{{ t('teachers.category.' ~ teacher.category_key, teacher.category_key|capitalize, teacher.category_key|capitalize, teacher.category_key|capitalize) }}</span>
-                            <span class="badge rounded-pill px-3 py-2" style="background: rgba(15,23,42,0.72); color: #fff;">
-                                <i class="fas fa-book-open me-1"></i>{{ ml(teacher, 'subject') or '-' }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="card-body p-4 d-flex flex-column">
-                        <h4 class="fw-bold mb-1">{{ teacher_name }}</h4>
-                        <p class="text-primary fw-semibold mb-4">{{ ml(teacher, 'position') or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') }}</p>
-
-                        <div class="info-box rounded-4 p-3 mb-3">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="fas fa-id-badge text-primary"></i>
-                                <h6 class="mb-0 fw-bold">{{ t('teachers.card.about', "Ma'lumot", 'Information', 'Informatsiya') }}</h6>
-                            </div>
-                            <p class="text-muted mb-0">
-                                {% if teacher_bio %}
-                                {{ teacher_bio|striptags|truncate(180) }}
-                                {% else %}
-                                {{ t('teachers.card.about_placeholder', "Ustoz haqida ma'lumot kiritilmagan.", 'No teacher information entered.', 'Informatsiya ob uchitele ne ukazana.') }}
-                                {% endif %}
-                            </p>
-                        </div>
-
-                        <div class="info-box rounded-4 p-3 mb-4">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="fas fa-trophy text-warning"></i>
-                                <h6 class="mb-0 fw-bold">{{ t('teachers.card.achievements', 'Yutuqlar', 'Achievements', 'Dostizheniya') }}</h6>
-                            </div>
-                            {% if teacher_achievements %}
-                            <ul class="mb-0 ps-3 text-muted">
-                                {% for line in teacher_achievements.split('\n') if line.strip() %}
-                                <li>{{ line|truncate(90) }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% else %}
-                            <p class="text-muted mb-0">{{ t('teachers.card.achievements_placeholder', "Yutuqlar kiritilmagan.", 'Achievements not entered.', 'Dostizheniya ne ukazany.') }}</p>
-                            {% endif %}
-                        </div>
-
-                        <a href="/teachers/{{ teacher.id }}" class="btn btn-outline-primary rounded-pill mt-auto">{{ t('teachers.card.more', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right ms-1"></i></a>
-                    </div>
+    <div class="page-header-overlay"></div>
+    <div class="container position-relative z-2">
+        <div class="page-header-panel">
+            <div class="page-header-grid">
+                <div>
+                    <span class="page-header-kicker"><i class="fas fa-chalkboard-teacher"></i>{{ t('teachers.header.badge', 'Pedagogik jamoa', 'Teaching team', 'Pedagogicheskiy sostav') }}</span>
+                    <h1 class="page-header-title">{{ t('teachers.title', 'Bizning ustozlar', 'Our teachers', 'Nashi uchitelya') }}</h1>
+                    <p class="page-header-subtitle">{{ t('teachers.subtitle', "Malakali va tajribali pedagoglar jamoasi bilan tanishing.", 'Meet our qualified and experienced educators.', 'Poznakomtes s komandoy kvalifitsirovannykh i opytnykh pedagogov.') }}</p>
+                    <ol class="page-breadcrumb">
+                        <li><a href="/">{{ t('general.home', 'Bosh sahifa', 'Home', 'Glavnaya') }}</a></li>
+                        <li>{{ t('teachers.title', 'Bizning ustozlar', 'Our teachers', 'Nashi uchitelya') }}</li>
+                    </ol>
+                </div>
+                <div class="header-glance-grid">
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-filter"></i>{{ t('teachers.header.category', 'Tanlangan kategoriya', 'Selected category', 'Vybrannaya kategoriya') }}</span>
+                        <div class="header-glance-value">{{ t('teachers.category.' ~ category, category|capitalize, category|capitalize, category|capitalize) }}</div>
+                    </article>
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-users"></i>{{ t('teachers.header.count', 'Pedagoglar soni', 'Number of teachers', 'Kolichestvo pedagogov') }}</span>
+                        <div class="header-glance-value header-glance-stat">{{ teachers|length }}</div>
+                    </article>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div class="text-center py-6">
-            <i class="fas fa-users text-muted mb-4" style="font-size:5rem; opacity:0.2;"></i>
-            <h4 class="text-muted fw-light">{{ t('teachers.empty.title', "Hozircha ustozlar qo'shilmagan", 'No teachers added yet', 'Uchitelya poka ne dobavleny') }}</h4>
-            <p class="text-muted">{{ t('teachers.empty.description', "Admin panel orqali ustozlar ma'lumotini qo'shing", 'Add teachers from the admin panel', 'Dobavte uchiteley cherez admin panel') }}</p>
-        </div>
-        {% endif %}
     </div>
 </section>
 
-<style>
-    .teacher-card { transition: transform .3s, box-shadow .3s; }
-    .teacher-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12) !important; }
-    .info-box { background: #f8fafc; border: 1px solid rgba(148, 163, 184, 0.18); }
-    .py-6 { padding-top: 4rem; padding-bottom: 4rem; }
-    html[data-theme='dark'] .info-box { background: rgba(15, 23, 42, 0.72); border-color: rgba(148, 163, 184, 0.2); }
-    html[data-theme='dark'] .teacher-card:hover { box-shadow: 0 22px 52px rgba(2, 6, 23, 0.42) !important; }
-</style>
+<div class="floating-filter-wrap">
+    <div class="container">
+        <div class="floating-filter-bar">
+            <a href="/teachers?category=all" class="premium-filter-chip {% if category == 'all' %}active{% endif %}">{{ t('teachers.category.all', 'Barchasi', 'All', 'Vse') }}</a>
+            <a href="/teachers?category=leadership" class="premium-filter-chip {% if category == 'leadership' %}active{% endif %}">{{ t('teachers.category.leadership', 'Rahbariyat', 'Leadership', 'Rukovodstvo') }}</a>
+            <a href="/teachers?category=science" class="premium-filter-chip {% if category == 'science' %}active{% endif %}">{{ t('teachers.category.science', 'Aniq fanlar', 'Sciences', 'Tochnyye nauki') }}</a>
+            <a href="/teachers?category=language" class="premium-filter-chip {% if category == 'language' %}active{% endif %}">{{ t('teachers.category.language', 'Tillar', 'Languages', 'Yazyki') }}</a>
+            <a href="/teachers?category=natural" class="premium-filter-chip {% if category == 'natural' %}active{% endif %}">{{ t('teachers.category.natural', "Tabiiy fanlar", 'Natural sciences', 'Yestestvennyye nauki') }}</a>
+        </div>
+    </div>
+</div>
+
+<section class="page-section-shell">
+    <div class="container">
+        {% if teachers %}
+            <div class="teacher-modern-grid">
+                {% for teacher in teachers %}
+                    {% set teacher_name = teacher.first_name ~ ' ' ~ teacher.last_name ~ (' ' ~ teacher.middle_name if teacher.middle_name else '') %}
+                    <article class="teacher-modern-card">
+                        <div class="teacher-modern-media">
+                            {% if teacher.image_path %}
+                                <img src="{{ teacher.image_path }}" class="w-100 h-100 object-fit-cover" alt="{{ teacher_name }}">
+                            {% else %}
+                                <div class="showcase-fallback"><i class="fas fa-user-tie"></i></div>
+                            {% endif %}
+                        </div>
+                        <div class="teacher-modern-body">
+                            <span class="news-badge news-badge-info">{{ t('teachers.category.' ~ teacher.category_key, teacher.category_key|capitalize, teacher.category_key|capitalize, teacher.category_key|capitalize) }}</span>
+                            <h3>{{ teacher_name }}</h3>
+                            <div class="teacher-modern-subject">{{ ml(teacher, 'subject') or '-' }}</div>
+                            <p>{{ (ml(teacher, 'bio') or t('teachers.card.about_placeholder', "Ustoz haqida ma'lumot kiritilmagan.", 'No teacher information entered.', 'Informatsiya ob uchitele ne ukazana.'))|striptags|truncate(140) }}</p>
+                            <div class="feed-meta mt-3">
+                                <span class="soft-chip">{{ ml(teacher, 'position') or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') }}</span>
+                            </div>
+                            <a href="/teachers/{{ teacher.id }}" class="feed-card-link mt-3">{{ t('teachers.card.more', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-premium-state">
+                <i class="fas fa-users"></i>
+                <h3>{{ t('teachers.empty.title', "Hozircha ustozlar qo'shilmagan", 'No teachers added yet', 'Uchitelya poka ne dobavleny') }}</h3>
+                <p class="mb-0 text-muted">{{ t('teachers.empty.description', "Admin panel orqali ustozlar ma'lumotini qo'shing.", 'Add teachers from the admin panel.', 'Dobavte uchiteley cherez admin panel.') }}</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

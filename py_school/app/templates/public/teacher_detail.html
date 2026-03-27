@@ -6,115 +6,132 @@
 {% set teacher_name = teacher.first_name ~ ' ' ~ teacher.last_name ~ (' ' ~ teacher.middle_name if teacher.middle_name else '') %}
 {% set teacher_bio = ml(teacher, 'bio') or '' %}
 {% set teacher_achievements = ml(teacher, 'achievements') or '' %}
-<section class="page-header bg-dark position-relative d-flex align-items-end" style="min-height: 48vh; padding-top: 100px;">
-    <div class="header-bg position-absolute top-0 start-0 w-100 h-100">
-        <div class="hero-overlay" style="background: linear-gradient(to bottom, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.92) 100%);"></div>
-        {% if teacher.image_path %}
-        <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ teacher.image_path }}'); background-size: cover; background-position: center top;"></div>
-        {% else %}
-        <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ settings.teachers_header_media_path or settings.about_image_path or settings.hero_media_path }}'); background-size: cover; background-position: center;"></div>
-        {% endif %}
-    </div>
+{% set teacher_subject = ml(teacher, 'subject') or '-' %}
+{% set teacher_position = ml(teacher, 'position') or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') %}
+{% set teacher_media = teacher.image_path or settings.teachers_header_media_path or settings.about_image_path or settings.hero_media_path or '/static/images/PIIMALogo.svg' %}
 
-    <div class="container position-relative z-2 pb-5">
-        <div class="row align-items-end g-4">
-            <div class="col-lg-3">
-                <div class="rounded-4 overflow-hidden shadow-lg border border-white border-opacity-25 bg-white" style="max-width: 260px;">
-                    {% if teacher.image_path %}
-                    <img src="{{ teacher.image_path }}" alt="{{ teacher_name }}" class="w-100" style="height: 300px; object-fit: cover; object-position: top;">
-                    {% else %}
-                    <div class="d-flex align-items-center justify-content-center text-white" style="height: 300px; background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
-                        <i class="fas fa-user-tie" style="font-size: 5rem; opacity: 0.35;"></i>
+<section class="immersive-page-header">
+    <div class="page-header-media">
+        <div class="media-fill" style="background-image:url('{{ teacher_media }}'); background-position:center top;"></div>
+    </div>
+    <div class="page-header-overlay"></div>
+    <div class="container position-relative z-2">
+        <div class="page-header-panel">
+            <div class="page-header-grid">
+                <div>
+                    <span class="page-header-kicker"><i class="fas fa-chalkboard-teacher"></i>{{ t('teachers.category.' ~ teacher.category_key, teacher.category_key|capitalize, teacher.category_key|capitalize, teacher.category_key|capitalize) }}</span>
+                    <h1 class="page-header-title">{{ teacher_name }}</h1>
+                    <p class="page-header-subtitle">{{ teacher_position }}</p>
+                    <div class="info-pill-strip mt-4">
+                        <span class="info-pill"><i class="fas fa-book-open"></i>{{ t('teacher.detail.subject', "O'qitadigan fan", 'Subject taught', 'Prepodavayemyy predmet') }}: {{ teacher_subject }}</span>
+                        <a href="/teachers" class="btn home-btn-secondary rounded-pill px-4 py-3">{{ t('teacher.detail.back', "Ustozlar ro'yxatiga qaytish", 'Back to teachers', 'Nazad k spisku uchiteley') }}</a>
                     </div>
-                    {% endif %}
+                    <ol class="page-breadcrumb">
+                        <li><a href="/">{{ t('general.home', 'Bosh sahifa', 'Home', 'Glavnaya') }}</a></li>
+                        <li><a href="/teachers">{{ t('teachers.title', 'Bizning ustozlar', 'Our teachers', 'Nashi uchitelya') }}</a></li>
+                        <li>{{ teacher_name }}</li>
+                    </ol>
                 </div>
-            </div>
-            <div class="col-lg-9 text-white">
-                <span class="badge bg-info text-dark rounded-pill px-3 py-2 mb-3">{{ t('teachers.category.' ~ teacher.category_key, teacher.category_key|capitalize, teacher.category_key|capitalize, teacher.category_key|capitalize) }}</span>
-                <h1 class="display-4 fw-bolder mb-3">{{ teacher_name }}</h1>
-                <p class="lead text-white-50 mb-3">{{ ml(teacher, 'position') or t('general.not_available', "Ma'lumot kiritilmagan", 'Information not provided', 'Informatsiya ne ukazana') }}</p>
-                <div class="d-flex flex-wrap gap-3">
-                    <span class="badge rounded-pill px-4 py-2" style="background: rgba(255,255,255,0.12);">
-                        <i class="fas fa-book-open me-2"></i>{{ t('teacher.detail.subject', "O'qitadigan fan", 'Subject taught', 'Prepodavayemyy predmet') }}: {{ ml(teacher, 'subject') or '-' }}
-                    </span>
-                    <a href="/teachers" class="btn btn-outline-light rounded-pill px-4">{{ t('teacher.detail.back', "Ustozlar ro'yxatiga qaytish", 'Back to teachers', 'Nazad k spisku uchiteley') }}</a>
+                <div class="header-glance-grid">
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-award"></i>{{ t('teacher.detail.focus', 'Asosiy roli', 'Primary role', 'Osnovnaya rol') }}</span>
+                        <div class="header-glance-value">{{ teacher_position }}</div>
+                    </article>
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-book"></i>{{ t('teacher.detail.subject_label', "Yo'nalish", 'Direction', 'Napravleniye') }}</span>
+                        <div class="header-glance-value">{{ teacher_subject }}</div>
+                    </article>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="py-6 bg-light">
+<section class="detail-shell">
     <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-7">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4 p-lg-5">
-                        <h3 class="fw-bold mb-4">{{ t('teacher.detail.about', 'Ustoz haqida', 'About the teacher', 'Ob uchitele') }}</h3>
-                        <div class="fs-5 text-muted lh-lg">
-                            {% if teacher_bio %}
-                            {{ teacher_bio|e|replace('\n', '<br>')|safe }}
-                            {% else %}
-                            {{ t('teachers.card.about_placeholder', "Ustoz haqida ma'lumot kiritilmagan.", 'No teacher information entered.', 'Informatsiya ob uchitele ne ukazana.') }}
-                            {% endif %}
+        <div class="detail-grid">
+            <article class="detail-main-card">
+                <span class="home-kicker">{{ t('teacher.detail.about', 'Ustoz haqida', 'About the teacher', 'Ob uchitele') }}</span>
+                <h2 class="detail-section-title mb-3">{{ teacher_name }}</h2>
+                <div class="detail-richtext">
+                    {% if teacher_bio %}
+                        {{ teacher_bio|e|replace('\n', '<br>')|safe }}
+                    {% else %}
+                        {{ t('teachers.card.about_placeholder', "Ustoz haqida ma'lumot kiritilmagan.", 'No teacher information entered.', 'Informatsiya ob uchitele ne ukazana.') }}
+                    {% endif %}
+                </div>
+            </article>
+
+            <div class="d-grid gap-4">
+                <aside class="sidebar-float-card">
+                    <h3>{{ t('teacher.detail.achievements', 'Erishgan yutuqlar', 'Achievements', 'Dostizheniya') }}</h3>
+                    {% if teacher_achievements %}
+                        <div class="achievement-list">
+                            {% for line in teacher_achievements.split('\n') if line.strip() %}
+                                <div class="achievement-item">
+                                    <span class="achievement-icon"><i class="fas fa-trophy"></i></span>
+                                    <div class="text-muted">{{ line }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="mb-0 text-muted">{{ t('teachers.card.achievements_placeholder', "Yutuqlar kiritilmagan.", 'Achievements not entered.', 'Dostizheniya ne ukazany.') }}</p>
+                    {% endif %}
+                </aside>
+
+                <aside class="sidebar-float-card">
+                    <h3>{{ t('teacher.detail.quick_info', "Qisqa ma'lumot", 'Quick info', 'Kratkaya informatsiya') }}</h3>
+                    <div class="sidebar-list">
+                        <div class="sidebar-list-item">
+                            <i class="fas fa-briefcase mt-1"></i>
+                            <div>
+                                <strong>{{ t('teacher.detail.position', 'Lavozim', 'Position', 'Dolzhnost') }}</strong>
+                                <span>{{ teacher_position }}</span>
+                            </div>
+                        </div>
+                        <div class="sidebar-list-item">
+                            <i class="fas fa-book-open mt-1"></i>
+                            <div>
+                                <strong>{{ t('teacher.detail.subject', "O'qitadigan fan", 'Subject taught', 'Prepodavayemyy predmet') }}</strong>
+                                <span>{{ teacher_subject }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4 p-lg-5">
-                        <h3 class="fw-bold mb-4">{{ t('teacher.detail.achievements', 'Erishgan yutuqlar', 'Achievements', 'Dostizheniya') }}</h3>
-                        {% if teacher_achievements %}
-                        <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
-                            {% for line in teacher_achievements.split('\n') if line.strip() %}
-                            <li class="d-flex align-items-start gap-3">
-                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 34px; height: 34px; background: var(--accent);">
-                                    <i class="fas fa-trophy small"></i>
-                                </span>
-                                <span class="text-muted lh-lg">{{ line }}</span>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                        {% else %}
-                        <p class="text-muted mb-0">{{ t('teachers.card.achievements_placeholder', "Yutuqlar kiritilmagan.", 'Achievements not entered.', 'Dostizheniya ne ukazany.') }}</p>
-                        {% endif %}
-                    </div>
-                </div>
+                </aside>
             </div>
         </div>
 
         {% if related_teachers %}
-        <div class="mt-5">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                <h3 class="fw-bold mb-0">{{ t('teacher.detail.related', 'Boshqa ustozlar', 'Other teachers', 'Drugiye uchitelya') }}</h3>
-                <a href="/teachers?category={{ teacher.category_key }}" class="btn btn-outline-primary rounded-pill px-4">{{ t('teacher.detail.back', "Ustozlar ro'yxatiga qaytish", 'Back to teachers', 'Nazad k spisku uchiteley') }}</a>
-            </div>
-            <div class="row g-4">
-                {% for item in related_teachers %}
-                {% set related_name = item.first_name ~ ' ' ~ item.last_name %}
-                <div class="col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
-                        <div style="height: 240px;">
-                            {% if item.image_path %}
-                            <img src="{{ item.image_path }}" alt="{{ related_name }}" class="w-100 h-100" style="object-fit: cover; object-position: top;">
-                            {% else %}
-                            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
-                                <i class="fas fa-user-tie fs-1 opacity-50"></i>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="card-body p-4">
-                            <h5 class="fw-bold mb-2">{{ related_name }}</h5>
-                            <p class="text-primary fw-semibold mb-2">{{ ml(item, 'position') or '-' }}</p>
-                            <p class="text-muted mb-3">{{ (ml(item, 'bio') or '')|striptags|truncate(120) }}</p>
-                            <a href="/teachers/{{ item.id }}" class="text-decoration-none fw-semibold">{{ t('teachers.card.more', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right ms-1"></i></a>
-                        </div>
+            <div class="mt-5">
+                <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+                    <div>
+                        <span class="home-kicker">{{ t('teacher.detail.related_kicker', "Shu yo'nalishdagi jamoa", 'Team in this direction', 'Komanda etogo napravleniya') }}</span>
+                        <h2 class="home-section-title mb-0">{{ t('teacher.detail.related', 'Boshqa ustozlar', 'Other teachers', 'Drugiye uchitelya') }}</h2>
                     </div>
+                    <a href="/teachers?category={{ teacher.category_key }}" class="feed-card-link">{{ t('teacher.detail.back', "Ustozlar ro'yxatiga qaytish", 'Back to teachers', 'Nazad k spisku uchiteley') }} <i class="fas fa-arrow-right"></i></a>
                 </div>
-                {% endfor %}
+                <div class="teacher-modern-grid">
+                    {% for item in related_teachers %}
+                        {% set related_name = item.first_name ~ ' ' ~ item.last_name %}
+                        <article class="teacher-modern-card">
+                            <div class="teacher-modern-media">
+                                {% if item.image_path %}
+                                    <img src="{{ item.image_path }}" class="w-100 h-100 object-fit-cover" alt="{{ related_name }}">
+                                {% else %}
+                                    <div class="showcase-fallback"><i class="fas fa-user-tie"></i></div>
+                                {% endif %}
+                            </div>
+                            <div class="teacher-modern-body">
+                                <span class="news-badge news-badge-info">{{ t('teachers.category.' ~ item.category_key, item.category_key|capitalize, item.category_key|capitalize, item.category_key|capitalize) }}</span>
+                                <h3>{{ related_name }}</h3>
+                                <div class="teacher-modern-subject">{{ ml(item, 'subject') or '-' }}</div>
+                                <p>{{ (ml(item, 'bio') or '')|striptags|truncate(110) }}</p>
+                                <a href="/teachers/{{ item.id }}" class="feed-card-link">{{ t('teachers.card.more', 'Batafsil', 'Details', 'Podrobnee') }} <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
         {% endif %}
     </div>
 </section>

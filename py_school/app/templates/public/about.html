@@ -3,83 +3,80 @@
 {% block title %}{{ t('nav.about', settings.nav_about_uz, settings.nav_about_en, settings.nav_about_ru) }} - {{ sm('school_name', 'Denov 2-son Maktab') }}{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<section class="page-header position-relative d-flex align-items-center justify-content-center overflow-hidden" style="min-height: 400px; padding-top: 80px;">
-    <div class="header-bg position-absolute top-0 start-0 w-100 h-100">
-        <div class="hero-overlay"></div>
-        {% if settings.about_header_media_type == 'video' %}
-            <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+{% set about_media = settings.about_header_media_path or settings.about_image_path or settings.hero_media_path or '/static/images/PIIMALogo.svg' %}
+{% set about_title = sm('about_title', "Zamonaviy ta'lim standarti") %}
+{% set about_description = sm('about_description', "Bizning maktab o'quvchilarga chuqur bilim berish va ularning iqtidorlarini rivojlantirishga qaratilgan.") or '' %}
+
+<section class="immersive-page-header">
+    <div class="page-header-media">
+        {% if settings.about_header_media_type == 'video' and settings.about_header_media_path %}
+            <video autoplay muted loop playsinline>
                 <source src="{{ settings.about_header_media_path }}" type="video/mp4" />
             </video>
         {% else %}
-            <div class="w-100 h-100 object-fit-cover" style="background-image: url('{{ settings.about_header_media_path or settings.about_image_path }}'); background-size: cover; background-position: center;"></div>
+            <div class="media-fill" style="background-image:url('{{ about_media }}');"></div>
         {% endif %}
     </div>
-    <div class="container position-relative z-2 text-center text-white mt-5">
-        <h1 class="display-3 fw-bolder mb-3 text-shadow">{{ t('nav.about', settings.nav_about_uz, settings.nav_about_en, settings.nav_about_ru) }}</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center justify-content-center mb-0 bg-transparent p-0">
-                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none hover-white">{{ t('nav.home', settings.nav_home_uz, settings.nav_home_en, settings.nav_home_ru) }}</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">{{ t('nav.about', settings.nav_about_uz, settings.nav_about_en, settings.nav_about_ru) }}</li>
-            </ol>
-        </nav>
-    </div>
-</section>
-
-<!-- About Content -->
-<section class="py-6 bg-white position-relative">
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6 position-relative">
-                <div class="about-image-wrapper p-3 bg-white rounded-5 shadow-lg position-relative z-2 transform-rotate-left">
-                    <img src="{{ settings.about_image_path }}" alt="About our school" class="img-fluid rounded-4 w-100 object-fit-cover" style="height: 500px;">
+    <div class="page-header-overlay"></div>
+    <div class="container position-relative z-2">
+        <div class="page-header-panel">
+            <div class="page-header-grid">
+                <div>
+                    <span class="page-header-kicker"><i class="fas fa-building-columns"></i>{{ t('about.header.kicker', "Ta'lim falsafasi", 'Education philosophy', 'Filosofiya obrazovaniya') }}</span>
+                    <h1 class="page-header-title">{{ t('nav.about', settings.nav_about_uz, settings.nav_about_en, settings.nav_about_ru) }}</h1>
+                    <p class="page-header-subtitle">{{ about_description|striptags|truncate(220) }}</p>
+                    <ol class="page-breadcrumb">
+                        <li><a href="/">{{ t('nav.home', settings.nav_home_uz, settings.nav_home_en, settings.nav_home_ru) }}</a></li>
+                        <li>{{ t('nav.about', settings.nav_about_uz, settings.nav_about_en, settings.nav_about_ru) }}</li>
+                    </ol>
                 </div>
-                <!-- Decorative element -->
-                <div class="position-absolute bottom-0 start-0 translate-middle text-primary opacity-25" style="z-index: 1;">
-                    <i class="fas fa-quote-left" style="font-size: 8rem;"></i>
-                </div>
-            </div>
-            
-            <div class="col-lg-6 px-lg-4">
-                <h2 class="text-primary fw-bold text-uppercase letter-spacing-1 mb-2 fs-6">{{ t('about.section.label', 'Biz haqimizda', 'About us', 'O nas') }}</h2>
-                <h3 class="display-5 fw-bolder mb-4 text-dark line-height-tight">
-                    {{ sm('about_title', "Zamonaviy ta'lim standarti") }}
-                </h3>
-                
-                <div class="fs-5 text-muted mb-5 fw-light lh-lg article-content">
-                    {{ (sm('about_description', "Bizning maktab o'quvchilarga chuqur bilim berish va ularning iqtidorlarini rivojlantirishga qaratilgan.") or '')|safe }}
-                </div>
-                
-                <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light border-start border-4 border-primary shadow-sm hover-lift">
-                            <i class="fas fa-bullseye fs-3 text-primary me-3"></i>
-                            <div>
-                                <h5 class="mb-1 fw-bold text-dark">{{ t('about.mission.title', 'Missionimiz', 'Our mission', 'Nasha missiya') }}</h5>
-                                <p class="mb-0 text-muted fs-7">{{ t('about.mission.description', "Sifatli ta'lim orqali jamiyatga foyda keltirish.", 'Serving society through quality education.', 'Sluzheniye obshchestvu cherez kachestvennoye obrazovaniye.') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light border-start border-4 border-accent shadow-sm hover-lift">
-                            <i class="fas fa-eye fs-3 text-accent me-3"></i>
-                            <div>
-                                <h5 class="mb-1 fw-bold text-dark">{{ t('about.vision.title', "Ko'z qarashimiz", 'Our vision', 'Nash vzglyad') }}</h5>
-                                <p class="mb-0 text-muted fs-7">{{ t('about.vision.description', "Raqamli asrda yetakchi kadrlar tayyorlash.", 'Preparing leading talents for the digital age.', 'Podgotovka vedushchikh kadrov dlya tsifrovoy epokhi.') }}</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="header-glance-grid">
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-school"></i>{{ t('about.header.card_one_label', 'Maktab ruhi', 'School spirit', 'Dukh shkoly') }}</span>
+                        <div class="header-glance-value">{{ t('about.header.card_one_text', "Intizom, chuqur ta'lim va katta maqsadlar bir joyda jam bo'lgan muhit.", 'An environment that combines discipline, deep learning and ambitious goals.', 'Sreda, v kotoroy obyedineny distsiplina, glubokoye obrazovaniye i bolshiye tseli.') }}</div>
+                    </article>
+                    <article class="header-glance-card">
+                        <span class="header-glance-label"><i class="fas fa-sparkles"></i>{{ t('about.header.card_two_label', 'Asosiy yo\'nalish', 'Core direction', 'Osnovnoye napravleniye') }}</span>
+                        <div class="header-glance-value">{{ about_title }}</div>
+                    </article>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<style>
-    .transform-rotate-left { transform: rotate(-2deg); transition: transform 0.5s; }
-    .transform-rotate-left:hover { transform: rotate(0deg); }
-    .hover-white:hover { color: white !important; }
-    .line-height-tight { line-height: 1.2; }
-    .article-content p { margin-bottom: 1.5rem; }
-</style>
+<section class="page-section-shell">
+    <div class="container">
+        <div class="split-showcase">
+            <div class="showcase-media-panel">
+                <div class="showcase-media-fill" style="background-image:url('{{ settings.about_image_path or about_media }}');"></div>
+                <div class="showcase-floating-card">
+                    <span class="home-chip home-chip-soft">{{ t('about.image.badge', "Maktab muhiti", 'School atmosphere', 'Atmosfera shkoly') }}</span>
+                    <p>{{ t('about.image.text', "Akademik talabchanlik va tarbiyaviy yondashuv bir-birini to'ldiradigan yagona makon.", 'A single space where academic rigor and educational care complement each other.', 'Yedinoye prostranstvo, gde akademicheskaya trebovatelnost i vospitatelnyy podkhod dopolnyayut drug druga.') }}</p>
+                </div>
+            </div>
+
+            <div class="home-panel h-100">
+                <span class="home-kicker">{{ t('about.story.kicker', "Biz haqimizda", 'About us', 'O nas') }}</span>
+                <h2 class="home-section-title mb-3">{{ about_title }}</h2>
+                <div class="detail-richtext mb-4">{{ about_description|safe }}</div>
+
+                <div class="pill-stat-list">
+                    <article class="pill-stat">
+                        <h3>{{ t('about.mission.title', 'Missionimiz', 'Our mission', 'Nasha missiya') }}</h3>
+                        <p>{{ t('about.mission.description', "Sifatli ta'lim orqali jamiyatga foyda keltirish.", 'Serving society through quality education.', 'Sluzheniye obshchestvu cherez kachestvennoye obrazovaniye.') }}</p>
+                    </article>
+                    <article class="pill-stat">
+                        <h3>{{ t('about.vision.title', "Ko'z qarashimiz", 'Our vision', 'Nash vzglyad') }}</h3>
+                        <p>{{ t('about.vision.description', "Raqamli asrda yetakchi kadrlar tayyorlash.", 'Preparing leading talents for the digital age.', 'Podgotovka vedushchikh kadrov dlya tsifrovoy epokhi.') }}</p>
+                    </article>
+                    <article class="pill-stat">
+                        <h3>{{ t('about.values.title', 'Yondashuvimiz', 'Our approach', 'Nash podkhod') }}</h3>
+                        <p>{{ t('about.values.description', "Har bir o'quvchi uchun tartib, motivatsiya va real natijaga yo'naltirilgan tizim.", 'A system focused on discipline, motivation and real outcomes for every student.', 'Sistema, oriyentirovannaya na distsiplinu, motivatsiyu i realnyy rezultat dlya kazhdogo uchenika.') }}</p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
