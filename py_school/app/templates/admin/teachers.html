@@ -15,6 +15,14 @@
 
 <div class="card shadow-sm border-0">
     <div class="card-body">
+        <div class="alert alert-info border-0 mb-4">
+            <div class="fw-semibold mb-1">Tartib raqami qoidasi</div>
+            <div class="small text-muted">
+                <strong>Barchasi</strong> umumiy ustozlar ro'yxati uchun ishlaydi.
+                <strong>Kategoriya</strong> esa faqat tanlangan fan yoki bo'lim ichidagi o'rinni belgilaydi.
+                Agar bir xil yoki bo'sh raqam tushib qolsa, tizim uni oldingi o'rindan keyingi bo'sh joyga qo'yadi.
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
@@ -23,7 +31,8 @@
                         <th>F.I.Sh.</th>
                         <th>Fan</th>
                         <th>Kategoriya</th>
-                        <th>Tartib</th>
+                        <th>Barchasi</th>
+                        <th>Kategoriya ichida</th>
                         <th class="text-end">Harakatlar</th>
                     </tr>
                 </thead>
@@ -53,7 +62,14 @@
                                 {% else %}{{ item.category_key }}{% endif %}
                             </span>
                         </td>
-                        <td>{{ item.display_order }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ all_order_map.get(item.id, "-") }}</div>
+                            <small class="text-muted">Kiritilgan: {{ item.display_order or "-" }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ category_order_map.get(item.id, "-") }}</div>
+                            <small class="text-muted">Kiritilgan: {{ item.category_display_order or "-" }}</small>
+                        </td>
                         <td class="text-end">
                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ item.id }}">
                                 <i class="fas fa-edit"></i>
@@ -66,7 +82,7 @@
                     {% endfor %}
                     {% if not items %}
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">Hozircha ustozlar qo'shilmagan.</td>
+                        <td colspan="7" class="text-center py-4 text-muted">Hozircha ustozlar qo'shilmagan.</td>
                     </tr>
                     {% endif %}
                 </tbody>
@@ -107,8 +123,14 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Tartib raqami</label>
-                        <input type="number" class="form-control" name="display_order" value="{{ item.display_order or 0 }}">
+                        <label class="form-label fw-semibold">Barchasi uchun tartib raqami</label>
+                        <input type="number" class="form-control" name="display_order" value="{{ item.display_order or '' }}" min="1" placeholder="Masalan: 1">
+                        <div class="form-text">Umumiy ustozlar sahifasidagi o'rin.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Kategoriya ichidagi tartib raqami</label>
+                        <input type="number" class="form-control" name="category_display_order" value="{{ item.category_display_order or '' }}" min="1" placeholder="Masalan: 2">
+                        <div class="form-text">Faqat shu kategoriya ichida ishlaydi.</div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">Yangi rasm</label>
@@ -210,8 +232,14 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Tartib raqami</label>
-                        <input type="number" class="form-control" name="display_order" value="0">
+                        <label class="form-label fw-semibold">Barchasi uchun tartib raqami</label>
+                        <input type="number" class="form-control" name="display_order" min="1" placeholder="Masalan: 1">
+                        <div class="form-text">Umumiy ustozlar ro'yxatidagi o'rin.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Kategoriya ichidagi tartib raqami</label>
+                        <input type="number" class="form-control" name="category_display_order" min="1" placeholder="Masalan: 3">
+                        <div class="form-text">Faqat shu tanlangan fan yoki bo'lim ichida ishlaydi.</div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">Rasm</label>

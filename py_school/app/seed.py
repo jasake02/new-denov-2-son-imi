@@ -334,7 +334,8 @@ def init_db(db: Session):
                     bio_uz="O'quvchilarni olimpiada va kirish imtihonlariga tayyorlashda katta tajribaga ega pedagog.",
                     achievements_uz="Viloyat matematika olimpiadasi g'oliblarini tayyorlagan.\nSTEM loyihalarida bir nechta muvaffaqiyatli guruhga rahbarlik qilgan.",
                     category_key="science",
-                    display_order=1,
+                    display_order=2,
+                    category_display_order=1,
                 ),
                 Teacher(
                     first_name="Mohira",
@@ -344,7 +345,8 @@ def init_db(db: Session):
                     bio_uz="Kommunikativ yondashuv asosida dars o'tuvchi, xalqaro sertifikatlarga ega ustoz.",
                     achievements_uz="CEFR bo'yicha yuqori natijaga erishgan o'quvchilarni tayyorlagan.\nMaktab debat klubi murabbiyi.",
                     category_key="language",
-                    display_order=2,
+                    display_order=3,
+                    category_display_order=1,
                 ),
                 Teacher(
                     first_name="Shahlo",
@@ -354,7 +356,8 @@ def init_db(db: Session):
                     bio_uz="Biologiya va tabiatshunoslik fanlarini zamonaviy metodlar asosida o'qitadi.",
                     achievements_uz="Fan oyliklari va laboratoriya mashg'ulotlarini samarali tashkil etgan.",
                     category_key="natural",
-                    display_order=3,
+                    display_order=4,
+                    category_display_order=1,
                 ),
                 Teacher(
                     first_name="Zafar",
@@ -364,7 +367,8 @@ def init_db(db: Session):
                     bio_uz="Pedagogik jamoani boshqarish va o'quv jarayonini muvofiqlashtirish bilan shug'ullanadi.",
                     achievements_uz="Ta'lim sifatini oshirish bo'yicha bir nechta ichki loyihalarni joriy qilgan.",
                     category_key="leadership",
-                    display_order=0,
+                    display_order=1,
+                    category_display_order=1,
                 ),
             ]
         )
@@ -376,6 +380,8 @@ def init_db(db: Session):
                 teacher.subject_uz = "Biologiya"
                 teacher.bio_uz = "Biologiya va tabiatshunoslik fanlarini zamonaviy metodlar asosida o'qitadi."
                 teacher.achievements_uz = "Fan oyliklari va laboratoriya mashg'ulotlarini samarali tashkil etgan."
+            if teacher.category_display_order is None and teacher.display_order is not None:
+                teacher.category_display_order = teacher.display_order
 
     if db.query(News).count() == 0:
         db.add_all(

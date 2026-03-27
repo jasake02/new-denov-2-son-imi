@@ -98,7 +98,8 @@ class Teacher(Base):
 
     image_path = Column(String, nullable=True)
     category_key = Column(String(50), default="teachers")
-    display_order = Column(Integer, default=0)
+    display_order = Column(Integer, nullable=True)
+    category_display_order = Column(Integer, nullable=True)
 
     created_date = Column(DateTime, default=datetime.utcnow)
     modified_date = Column(DateTime, nullable=True)

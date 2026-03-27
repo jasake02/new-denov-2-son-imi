@@ -28,6 +28,10 @@ SITE_SETTINGS_RUNTIME_COLUMNS = {
     "contact_hours_ru": "TEXT",
 }
 
+TEACHERS_RUNTIME_COLUMNS = {
+    "category_display_order": "INTEGER",
+}
+
 
 def ensure_site_settings_schema(target_engine=engine, sqlite_mode: bool | None = None) -> None:
     sqlite_mode = IS_SQLITE if sqlite_mode is None else sqlite_mode
@@ -47,6 +51,26 @@ def ensure_site_settings_schema(target_engine=engine, sqlite_mode: bool | None =
                 connection.execute(text(f"ALTER TABLE site_settings ADD COLUMN {column_name} {column_type}"))
             else:
                 connection.execute(text(f"ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS {column_name} {column_type}"))
+
+
+def ensure_teachers_schema(target_engine=engine, sqlite_mode: bool | None = None) -> None:
+    sqlite_mode = IS_SQLITE if sqlite_mode is None else sqlite_mode
+    inspector = inspect(target_engine)
+
+    if "teachers" not in inspector.get_table_names():
+        return
+
+    existing_columns = {column["name"] for column in inspector.get_columns("teachers")}
+
+    with target_engine.begin() as connection:
+        for column_name, column_type in TEACHERS_RUNTIME_COLUMNS.items():
+            if column_name in existing_columns:
+                continue
+
+            if sqlite_mode:
+                connection.execute(text(f"ALTER TABLE teachers ADD COLUMN {column_name} {column_type}"))
+            else:
+                connection.execute(text(f"ALTER TABLE teachers ADD COLUMN IF NOT EXISTS {column_name} {column_type}"))
 
 
 def sync_postgres_sequences() -> None:
@@ -99,6 +123,7 @@ def bootstrap_remote_database() -> bool:
         connect_args={"check_same_thread": False},
     )
     ensure_site_settings_schema(source_engine, sqlite_mode=True)
+    ensure_teachers_schema(source_engine, sqlite_mode=True)
     SourceSession = sessionmaker(autocommit=False, autoflush=False, bind=source_engine)
 
     source_db = SourceSession()

@@ -9,6 +9,7 @@ from app.bootstrap import sync_postgres_sequences
 from app.database import STATIC_DIR, get_db
 from app.dependencies import get_template_context
 from app.models.models import ContactMessage, Department, News, Teacher
+from app.services.teacher_order import sort_teachers_for_display
 from app.template_loader import create_templates
 
 router = APIRouter()
@@ -53,12 +54,7 @@ def home(request: Request, db: Session = Depends(get_db)):
         .all()
     )
     featured_departments = db.query(Department).order_by(desc(Department.created_date)).limit(3).all()
-    featured_teachers = (
-        db.query(Teacher)
-        .order_by(Teacher.display_order.asc(), Teacher.last_name.asc(), Teacher.first_name.asc())
-        .limit(4)
-        .all()
-    )
+    featured_teachers = sort_teachers_for_display(db.query(Teacher).all(), mode="all")[:4]
 
     context.update(
         {
@@ -147,10 +143,12 @@ def department_detail(request: Request, dept_id: int, db: Session = Depends(get_
 def teachers_list(request: Request, category: str = "all", db: Session = Depends(get_db)):
     context = get_template_context(request, db)
     category = normalize_public_category(category, TEACHER_CATEGORY_ALIASES)
-    query = db.query(Teacher).order_by(Teacher.display_order.asc(), Teacher.last_name.asc(), Teacher.first_name.asc())
+    query = db.query(Teacher)
     if category != "all":
         query = query.filter(Teacher.category_key == category)
-    context.update({"teachers": query.all(), "category": category})
+
+    mode = "category" if category != "all" else "all"
+    context.update({"teachers": sort_teachers_for_display(query.all(), mode=mode), "category": category})
     return templates.TemplateResponse(request=request, name="public/teachers.html", context=context)
 
 
@@ -161,13 +159,12 @@ def teacher_detail(request: Request, teacher_id: int, db: Session = Depends(get_
     if not teacher:
         return RedirectResponse(url="/teachers", status_code=303)
 
-    related_teachers = (
+    related_teachers = sort_teachers_for_display(
         db.query(Teacher)
         .filter(Teacher.id != teacher.id, Teacher.category_key == teacher.category_key)
-        .order_by(Teacher.display_order.asc(), Teacher.last_name.asc(), Teacher.first_name.asc())
-        .limit(3)
-        .all()
-    )
+        .all(),
+        mode="category",
+    )[:3]
     context.update({"teacher": teacher, "related_teachers": related_teachers})
     return templates.TemplateResponse(request=request, name="public/teacher_detail.html", context=context)
 

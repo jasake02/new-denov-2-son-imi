@@ -14,6 +14,7 @@ from app.dependencies import get_current_admin, require_admin, serializer
 from app.models.models import AdminUser, ContentItem, ContactMessage, Department, News, SiteSetting, Teacher
 from app.services.auth import get_password_hash, verify_password
 from app.services.storage import delete_media, save_upload_file
+from app.services.teacher_order import build_effective_order_map, normalize_order_value, sort_teachers_for_display
 from app.template_loader import create_templates
 
 router = APIRouter()
@@ -106,6 +107,17 @@ def build_content_sections(items: list[ContentItem]) -> list[dict]:
         sections.append({"key": key, "title": key.replace("_", " ").title(), "items": sorted(grouped[key], key=lambda item: item.key)})
 
     return sections
+
+
+def build_teacher_category_order_map(items: list[Teacher]) -> dict[int, int]:
+    grouped: dict[str, list[Teacher]] = defaultdict(list)
+    for item in items:
+        grouped[item.category_key].append(item)
+
+    effective_orders: dict[int, int] = {}
+    for teachers in grouped.values():
+        effective_orders.update(build_effective_order_map(teachers, mode="category"))
+    return effective_orders
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -382,8 +394,18 @@ def admin_departments_delete(request: Request, id: int, admin_id: int = Depends(
 
 @router.get("/teachers", response_class=HTMLResponse)
 def admin_teachers_list(request: Request, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
-    items = db.query(Teacher).order_by(Teacher.display_order.asc(), Teacher.last_name.asc(), Teacher.first_name.asc()).all()
-    return templates.TemplateResponse(request=request, name="admin/teachers.html", context={"request": request, "items": items})
+    items = db.query(Teacher).all()
+    sorted_items = sort_teachers_for_display(items, mode="all")
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/teachers.html",
+        context={
+            "request": request,
+            "items": sorted_items,
+            "all_order_map": build_effective_order_map(sorted_items, mode="all"),
+            "category_order_map": build_teacher_category_order_map(items),
+        },
+    )
 
 
 @router.post("/teachers/create")
@@ -395,7 +417,8 @@ def admin_teachers_create(
     last_name: str = Form(...),
     middle_name: str = Form(None),
     category_key: str = Form("science"),
-    display_order: int = Form(0),
+    display_order: str = Form(None),
+    category_display_order: str = Form(None),
     position_uz: str = Form(None),
     position_en: str = Form(None),
     position_ru: str = Form(None),
@@ -417,7 +440,8 @@ def admin_teachers_create(
         last_name=last_name.strip(),
         middle_name=normalize_text(middle_name),
         category_key=normalize_teacher_category(category_key),
-        display_order=display_order,
+        display_order=normalize_order_value(display_order),
+        category_display_order=normalize_order_value(category_display_order),
         position_uz=normalize_text(position_uz),
         position_en=normalize_text(position_en),
         position_ru=normalize_text(position_ru),
@@ -447,7 +471,8 @@ def admin_teachers_edit(
     last_name: str = Form(...),
     middle_name: str = Form(None),
     category_key: str = Form("science"),
-    display_order: int = Form(0),
+    display_order: str = Form(None),
+    category_display_order: str = Form(None),
     position_uz: str = Form(None),
     position_en: str = Form(None),
     position_ru: str = Form(None),
@@ -470,7 +495,8 @@ def admin_teachers_edit(
     item.last_name = last_name.strip()
     item.middle_name = normalize_text(middle_name)
     item.category_key = normalize_teacher_category(category_key)
-    item.display_order = display_order
+    item.display_order = normalize_order_value(display_order)
+    item.category_display_order = normalize_order_value(category_display_order)
     item.position_uz = normalize_text(position_uz)
     item.position_en = normalize_text(position_en)
     item.position_ru = normalize_text(position_ru)
