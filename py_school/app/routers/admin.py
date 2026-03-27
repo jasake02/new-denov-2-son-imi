@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.bootstrap import sync_postgres_sequences
 from app.database import get_db
-from app.dependencies import get_current_admin, require_admin, serializer
+from app.dependencies import SECRET_KEY, get_current_admin, require_admin, serializer
 from app.models.models import AdminUser, ContentItem, ContactMessage, Department, News, SiteSetting, Teacher
 from app.services.auth import get_password_hash, verify_password
 from app.services.storage import delete_media, save_upload_file
@@ -38,6 +38,7 @@ CONTENT_SECTION_CONFIG = [
     ("footer", "Footer"),
     ("general", "Umumiy"),
 ]
+CODE_EDIT_PHRASE = os.getenv("ADMIN_CODE_EDIT_PHRASE") or SECRET_KEY
 
 
 def redirect(url: str) -> RedirectResponse:
@@ -118,6 +119,10 @@ def build_teacher_category_order_map(items: list[Teacher]) -> dict[int, int]:
     for teachers in grouped.values():
         effective_orders.update(build_effective_order_map(teachers, mode="category"))
     return effective_orders
+
+
+def can_edit_code(submitted_phrase: str | None) -> bool:
+    return normalize_text(submitted_phrase) == normalize_text(CODE_EDIT_PHRASE)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -572,14 +577,24 @@ def admin_messages_delete(request: Request, id: int, admin_id: int = Depends(req
 
 
 @router.get("/sitesettings", response_class=HTMLResponse)
-def admin_settings_get(request: Request, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
+def admin_settings_get(
+    request: Request,
+    saved: int = 0,
+    code_locked: int = 0,
+    admin_id: int = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
     settings = db.query(SiteSetting).first()
     if not settings:
         settings = SiteSetting(id=1)
         db.add(settings)
         commit_with_retry(db)
         db.refresh(settings)
-    return templates.TemplateResponse(request=request, name="admin/settings.html", context={"request": request, "settings": settings})
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/settings.html",
+        context={"request": request, "settings": settings, "saved": bool(saved), "code_locked": bool(code_locked)},
+    )
 
 
 @router.post("/sitesettings")
@@ -590,6 +605,9 @@ async def admin_settings_post(request: Request, admin_id: int = Depends(require_
         db.add(settings)
 
     form = await request.form()
+    previous_custom_css = normalize_text(settings.custom_css)
+    submitted_custom_css = normalize_text(form.get("custom_css"))
+    code_changed = submitted_custom_css != previous_custom_css
 
     text_fields = [
         "school_name_uz",
@@ -645,7 +663,6 @@ async def admin_settings_post(request: Request, admin_id: int = Depends(require_
         "facebook_url",
         "telegram_url",
         "instagram_url",
-        "custom_css",
     ]
 
     for field_name in text_fields:
@@ -675,8 +692,18 @@ async def admin_settings_post(request: Request, admin_id: int = Depends(require_
             if hasattr(settings, media_type_attr):
                 setattr(settings, media_type_attr, detect_media_type(saved_path))
 
+    code_locked = False
+    if code_changed:
+        if can_edit_code(form.get("code_edit_phrase")):
+            settings.custom_css = submitted_custom_css
+        else:
+            code_locked = True
+
     commit_with_retry(db)
-    return redirect("/admin/sitesettings")
+    next_url = "/admin/sitesettings?saved=1"
+    if code_locked:
+        next_url += "&code_locked=1"
+    return redirect(next_url)
 
 
 @router.get("/content", response_class=HTMLResponse)

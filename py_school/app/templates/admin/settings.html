@@ -13,6 +13,16 @@
 <div class="card shadow-sm border-0">
     <div class="card-body p-4">
         <form action="/admin/sitesettings" method="post" enctype="multipart/form-data">
+            {% if saved %}
+            <div class="alert alert-success border-0 mb-4">
+                Sozlamalar saqlandi.
+            </div>
+            {% endif %}
+            {% if code_locked %}
+            <div class="alert alert-warning border-0 mb-4">
+                Oddiy sozlamalar saqlandi, lekin <strong>Custom CSS</strong> o'zgarmadi. Kodni saqlash uchun maxsus so'zni to'g'ri kiriting.
+            </div>
+            {% endif %}
             <h5 class="border-bottom pb-2 mb-4 text-primary">Brend va navigatsiya</h5>
             <div class="row g-4 mb-5">
                 <div class="col-md-4">
@@ -269,9 +279,27 @@
             </div>
 
             <h5 class="border-bottom pb-2 mb-4 text-secondary">Qo'shimcha CSS</h5>
+            <div class="alert alert-dark border-0 mb-4">
+                <div class="fw-semibold mb-1">Kod himoyasi yoqilgan</div>
+                <div class="small text-muted mb-0">
+                    Custom CSS ni har qanday admin saqlay olmaydi. Bu bo'limni saqlash uchun maxsus so'z kerak bo'ladi.
+                </div>
+            </div>
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <label class="form-label fw-semibold">Custom CSS</label>
+                    <textarea name="custom_css" class="form-control font-monospace" rows="6">{{ settings.custom_css or '' }}</textarea>
+                </div>
+                <div class="col-lg-4">
+                    <label class="form-label fw-semibold">Maxsus so'z</label>
+                    <input type="password" name="code_edit_phrase" class="form-control" autocomplete="off" placeholder="Kodni saqlash uchun kiriting">
+                    <small class="text-muted d-block mt-2">
+                        Bu maydon faqat CSS o'zgarganda tekshiriladi.
+                    </small>
+                </div>
+            </div>
             <div class="mb-4">
-                <label class="form-label fw-semibold">Custom CSS</label>
-                <textarea name="custom_css" class="form-control font-monospace" rows="6">{{ settings.custom_css or '' }}</textarea>
+                <small class="text-muted">Agar maxsus so'z noto'g'ri bo'lsa, boshqa sozlamalar saqlanadi, lekin CSS eski holatda qoladi.</small>
             </div>
 
             <div class="text-end">
