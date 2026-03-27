@@ -3,7 +3,13 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.models.models import AdminUser, ContentItem, Department, News, SiteSetting, Teacher
-from app.services.auth import get_password_hash
+from app.services.auth import get_password_hash, verify_password
+
+DEFAULT_ADMIN_LOGIN = "d2_owner_7824"
+LEGACY_ADMIN_PASSWORDS = ("D2s!Admin#2026X",)
+LEGACY_ADMIN_SECRET_PHRASES = ("Denov2-Reset@Key",)
+ROTATED_ADMIN_PASSWORD_HASH = "$2b$12$z8a6Rq0xkK6mXEE34JoY8eF93X4SZb6O8BPGVbJjUtCddUQ70KxVu"
+ROTATED_ADMIN_SECRET_HASH = "$2b$12$JbQIHNKxwn5509HBwvdYuOucXITP6uOkCPMKx7nOMEcXSX1ZEbeB."
 
 
 def init_db(db: Session):
@@ -87,13 +93,20 @@ def init_db(db: Session):
     admin = db.query(AdminUser).filter(AdminUser.is_active == True).first()
     if not admin:
         admin = AdminUser(
-            user_name="d2_owner_7824",
-            password_hash=get_password_hash("D2s!Admin#2026X"),
-            secret_word_hash=get_password_hash("Denov2-Reset@Key"),
+            user_name=DEFAULT_ADMIN_LOGIN,
+            password_hash=ROTATED_ADMIN_PASSWORD_HASH,
+            secret_word_hash=ROTATED_ADMIN_SECRET_HASH,
         )
         db.add(admin)
-    elif not admin.secret_word_hash:
-        admin.secret_word_hash = get_password_hash("Denov2-Reset@Key")
+    else:
+        if admin.user_name == DEFAULT_ADMIN_LOGIN and any(
+            verify_password(old_password, admin.password_hash or "") for old_password in LEGACY_ADMIN_PASSWORDS
+        ):
+            admin.password_hash = ROTATED_ADMIN_PASSWORD_HASH
+        if not admin.secret_word_hash or any(
+            verify_password(old_secret, admin.secret_word_hash or "") for old_secret in LEGACY_ADMIN_SECRET_PHRASES
+        ):
+            admin.secret_word_hash = ROTATED_ADMIN_SECRET_HASH
 
     def ensure_content(key: str, uz: str, en: str, ru: str):
         if not db.query(ContentItem).filter(ContentItem.key == key).first():
