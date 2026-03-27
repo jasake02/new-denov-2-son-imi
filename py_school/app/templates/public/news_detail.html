@@ -58,7 +58,7 @@
             <article class="detail-main-card">
                 {% if news.image_path and not (news.image_path.endswith('.mp4') or news.image_path.endswith('.webm') or news.image_path.endswith('.ogg')) %}
                     <div class="overflow-hidden rounded-4 mb-4">
-                        <img src="{{ news.image_path }}" class="w-100" alt="{{ news_title }}" style="max-height: 460px; object-fit: cover;">
+                        <img src="{{ news.image_path }}" class="detail-story-asset" alt="{{ news_title }}">
                     </div>
                 {% endif %}
                 <span class="home-kicker">{{ t('news.detail.story', 'Maqola', 'Story', 'Material') }}</span>

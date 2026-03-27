@@ -60,7 +60,7 @@
         {% if lead_news %}
             <div class="feed-grid mb-4">
                 <article class="feed-card feed-card-feature">
-                    <div class="feed-card-media">
+                    <div class="feed-card-media news-asset-frame">
                         {% if lead_news.image_path %}
                             {% if lead_news.image_path.endswith('.mp4') or lead_news.image_path.endswith('.webm') or lead_news.image_path.endswith('.ogg') %}
                                 <video autoplay muted loop playsinline>
@@ -88,7 +88,7 @@
                 {% for news in other_news %}
                     {% set news_category_key = 'announcement' if news.category_key in ['announcement', 'agency'] else news.category_key %}
                     <article class="feed-card">
-                        <div class="feed-card-media">
+                        <div class="feed-card-media news-asset-frame">
                             {% if news.image_path %}
                                 {% if news.image_path.endswith('.mp4') or news.image_path.endswith('.webm') or news.image_path.endswith('.ogg') %}
                                     <video autoplay muted loop playsinline>

@@ -12,12 +12,12 @@
 
 <section class="immersive-page-header">
     <div class="page-header-media">
-        <div class="media-fill" style="background-image:url('{{ teacher_media }}'); background-position:center top;"></div>
+        <div class="media-fill teacher-detail-backdrop" style="background-image:url('{{ teacher_media }}');"></div>
     </div>
     <div class="page-header-overlay"></div>
     <div class="container position-relative z-2">
         <div class="page-header-panel">
-            <div class="page-header-grid">
+            <div class="page-header-grid page-header-grid-portrait">
                 <div>
                     <span class="page-header-kicker"><i class="fas fa-chalkboard-teacher"></i>{{ t('teachers.category.' ~ teacher.category_key, teacher.category_key|capitalize, teacher.category_key|capitalize, teacher.category_key|capitalize) }}</span>
                     <h1 class="page-header-title">{{ teacher_name }}</h1>
@@ -33,6 +33,13 @@
                     </ol>
                 </div>
                 <div class="header-glance-grid">
+                    <div class="header-portrait-card">
+                        {% if teacher.image_path %}
+                            <img src="{{ teacher.image_path }}" alt="{{ teacher_name }}">
+                        {% else %}
+                            <div class="feature-news-fallback h-100"><i class="fas fa-user-tie"></i></div>
+                        {% endif %}
+                    </div>
                     <article class="header-glance-card">
                         <span class="header-glance-label"><i class="fas fa-award"></i>{{ t('teacher.detail.focus', 'Asosiy roli', 'Primary role', 'Osnovnaya rol') }}</span>
                         <div class="header-glance-value">{{ teacher_position }}</div>
