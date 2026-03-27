@@ -1,4 +1,5 @@
 from fastapi import Request
+from app.services.russian_text import normalize_russian_text
 
 DEFAULT_LANGUAGE = "uz"
 VALID_LANGUAGES = ["uz", "en", "ru"]
@@ -22,5 +23,5 @@ def get_text(lang: str, uz: str, en: str, ru: str) -> str:
     if lang == "en" and en:
         return en
     elif lang == "ru" and ru:
-        return ru
+        return normalize_russian_text(ru)
     return uz

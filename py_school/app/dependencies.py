@@ -9,6 +9,7 @@ from app.database import get_db
 from app.models.models import SiteSetting
 from app.services.content import get_content_translation
 from app.services.localization import get_current_language
+from app.services.russian_text import normalize_russian_text
 
 # Used for cookie session signing
 SECRET_KEY = os.getenv("SECRET_KEY", "denov2_super_secret_key_change_in_production")
@@ -45,16 +46,18 @@ def get_template_context(request: Request, db: Session = Depends(get_db)):
     def ml(obj, field: str):
         localized_value = getattr(obj, f"{field}_{lang}", None)
         if localized_value:
-            return localized_value
-        return getattr(obj, f"{field}_uz", None)
+            return normalize_russian_text(localized_value) if lang == "ru" else localized_value
+        fallback = getattr(obj, f"{field}_uz", None)
+        return normalize_russian_text(fallback) if lang == "ru" else fallback
 
     def sm(field: str, default: str = None):
         if not settings:
             return default
         localized_value = getattr(settings, f"{field}_{lang}", None)
         if localized_value:
-            return localized_value
-        return getattr(settings, f"{field}_uz", None) or default
+            return normalize_russian_text(localized_value) if lang == "ru" else localized_value
+        fallback = getattr(settings, f"{field}_uz", None) or default
+        return normalize_russian_text(fallback) if lang == "ru" else fallback
         
     return {
         "request": request,

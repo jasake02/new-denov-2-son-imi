@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.models.models import AdminUser, ContentItem, Department, News, SiteSetting, Teacher
 from app.services.auth import get_password_hash, verify_password
+from app.services.russian_text import contains_cyrillic, normalize_russian_text
 
 DEFAULT_ADMIN_LOGIN = "d2_owner_7824"
 LEGACY_ADMIN_PASSWORDS = ("D2s!Admin#2026X",)
@@ -13,13 +14,18 @@ ROTATED_ADMIN_SECRET_HASH = "$2b$12$JbQIHNKxwn5509HBwvdYuOucXITP6uOkCPMKx7nOMEcX
 
 
 def init_db(db: Session):
+    def ensure_ru_text(current_value: str | None, preferred_value: str) -> str:
+        if not current_value or not contains_cyrillic(current_value):
+            return preferred_value
+        return current_value
+
     settings = db.query(SiteSetting).filter(SiteSetting.id == 1).first()
     if not settings:
         settings = SiteSetting(
             id=1,
             school_name_uz="Denov 2-son ixtisoslashtirilgan maktab",
             school_name_en="Denov 2 Specialized School",
-            school_name_ru="Denov 2 School",
+            school_name_ru="Деновская специализированная школа №2",
             navbar_logo_path="/static/images/piima-logo.svg",
             favicon_path="/static/images/PIIMALogo.svg",
             navbar_bg_color="#1e293b",
@@ -27,19 +33,19 @@ def init_db(db: Session):
             navbar_hover_color="#facc15",
             nav_home_uz="Bosh sahifa",
             nav_home_en="Home",
-            nav_home_ru="Glavnaya",
+            nav_home_ru="Главная",
             nav_about_uz="Maktab haqida",
             nav_about_en="About",
-            nav_about_ru="O shkole",
+            nav_about_ru="О школе",
             nav_news_uz="Yangiliklar",
             nav_news_en="News",
-            nav_news_ru="Novosti",
+            nav_news_ru="Новости",
             nav_departments_uz="Bo'limlar",
             nav_departments_en="Departments",
-            nav_departments_ru="Otdely",
+            nav_departments_ru="Отделы",
             nav_contact_uz="Bog'lanish",
             nav_contact_en="Contact",
-            nav_contact_ru="Kontakty",
+            nav_contact_ru="Контакты",
             primary_color="#1e293b",
             primary_dark_color="#0f172a",
             accent_color="#0ea5e9",
@@ -55,13 +61,13 @@ def init_db(db: Session):
             footer_map_embed_url="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.98056908652!2d67.90785499227883!3d38.25250913944837!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38b51156e450102f%3A0x60ba697500c44816!2sDenov%202-sonli%20ixtisoslashtirilgan%20maktab%20internati!5e0!3m2!1sen!2s!4v1771743026788!5m2!1sen!2s",
             footer_address_uz="Denov shahar, Surxandaryo viloyati",
             footer_address_en="Denov city, Surxandarya region",
-            footer_address_ru="Denov, Surxandarya",
+            footer_address_ru="Денов, Сурхандарьинская область",
             footer_phone="+998-76-228-25-64",
             contact_phone_secondary="+998-90-123-45-67",
             contact_phone_hotline="+998-99-777-77-77",
             contact_hours_uz="Dushanba - Shanba: 08:00 - 18:00",
             contact_hours_en="Monday - Saturday: 08:00 - 18:00",
-            contact_hours_ru="Ponedelnik - Subbota: 08:00 - 18:00",
+            contact_hours_ru="Понедельник - Суббота: 08:00 - 18:00",
             footer_email="info@denov2sonimi.uz",
             footer_bg_color="#111827",
             footer_text_color="#e5e7eb",
@@ -75,8 +81,13 @@ def init_db(db: Session):
             settings.nav_departments_uz = "Bo'limlar"
         if not settings.nav_departments_en or settings.nav_departments_en == "Teachers":
             settings.nav_departments_en = "Departments"
-        if not settings.nav_departments_ru or settings.nav_departments_ru == "Uchitelya":
-            settings.nav_departments_ru = "Otdely"
+        settings.school_name_ru = ensure_ru_text(settings.school_name_ru, "Деновская специализированная школа №2")
+        settings.nav_home_ru = ensure_ru_text(settings.nav_home_ru, "Главная")
+        settings.nav_about_ru = ensure_ru_text(settings.nav_about_ru, "О школе")
+        settings.nav_news_ru = ensure_ru_text(settings.nav_news_ru, "Новости")
+        settings.nav_departments_ru = ensure_ru_text(settings.nav_departments_ru, "Отделы")
+        settings.nav_contact_ru = ensure_ru_text(settings.nav_contact_ru, "Контакты")
+        settings.footer_address_ru = ensure_ru_text(settings.footer_address_ru, "Денов, Сурхандарьинская область")
         if not settings.hero_title_uz or settings.hero_title_uz == "Kelajak sari yorqin qadamlar":
             settings.hero_title_uz = "Denov tuman 2-son ixtisoslashtirilgan maktab-internati"
         if not settings.contact_phone_secondary:
@@ -87,8 +98,7 @@ def init_db(db: Session):
             settings.contact_hours_uz = "Dushanba - Shanba: 08:00 - 18:00"
         if not settings.contact_hours_en:
             settings.contact_hours_en = "Monday - Saturday: 08:00 - 18:00"
-        if not settings.contact_hours_ru:
-            settings.contact_hours_ru = "Ponedelnik - Subbota: 08:00 - 18:00"
+        settings.contact_hours_ru = ensure_ru_text(settings.contact_hours_ru, "Понедельник - Суббота: 08:00 - 18:00")
 
     admin = db.query(AdminUser).filter(AdminUser.is_active == True).first()
     if not admin:
@@ -109,8 +119,16 @@ def init_db(db: Session):
             admin.secret_word_hash = ROTATED_ADMIN_SECRET_HASH
 
     def ensure_content(key: str, uz: str, en: str, ru: str):
-        if not db.query(ContentItem).filter(ContentItem.key == key).first():
+        item = db.query(ContentItem).filter(ContentItem.key == key).first()
+        if not item:
             db.add(ContentItem(key=key, value_uz=uz, value_en=en, value_ru=ru))
+            return
+        if not item.value_uz:
+            item.value_uz = uz
+        if en and not item.value_en:
+            item.value_en = en
+        if ru and (not item.value_ru or not contains_cyrillic(item.value_ru)):
+            item.value_ru = ru
 
     def upsert_content(key: str, uz: str, en: str, ru: str):
         item = db.query(ContentItem).filter(ContentItem.key == key).first()
@@ -121,125 +139,125 @@ def init_db(db: Session):
         item.value_en = en
         item.value_ru = ru
 
-    ensure_content("about.mission_vision.title", "Missiyamiz va ko'z qarashimiz", "Our mission and vision", "Nasha missiya i vzglyad")
-    ensure_content("about.section.label", "Biz haqimizda", "About us", "O nas")
-    ensure_content("about.mission.title", "Missionimiz", "Our mission", "Nasha missiya")
-    ensure_content("about.vision.title", "Ko'z qarashimiz", "Our vision", "Nash vzglyad")
-    ensure_content("about.mission.description", "Sifatli ta'lim orqali jamiyatga foyda keltirish.", "Serving society through quality education.", "Sluzheniye obshchestvu cherez kachestvennoye obrazovaniye.")
-    ensure_content("about.vision.description", "Raqamli asrda yetakchi kadrlar tayyorlash.", "Preparing leading talents for the digital age.", "Podgotovka vedushchikh kadrov dlya tsifrovoy epokhi.")
-    ensure_content("nav.home", "Bosh sahifa", "Home", "Glavnaya")
-    ensure_content("nav.about", "Maktab haqida", "About", "O shkole")
-    ensure_content("nav.news", "Yangiliklar", "News", "Novosti")
-    ensure_content("nav.departments", "Bo'limlar", "Departments", "Otdely")
-    ensure_content("nav.contact", "Bog'lanish", "Contact", "Kontakty")
-    ensure_content("nav.announcements", "E'lonlar", "Announcements", "Obyavleniya")
-    ensure_content("nav.teachers", "Ustozlar", "Teachers", "Uchitelya")
-    ensure_content("general.home", "Bosh sahifa", "Home", "Glavnaya")
-    ensure_content("general.details", "Batafsil", "Details", "Podrobnee")
-    ensure_content("general.read_more", "Batafsil o'qish", "Read more", "Chitat dalej")
-    ensure_content("general.detail_page", "Batafsil", "Details", "Podrobnee")
-    ensure_content("general.not_available", "Ma'lumot kiritilmagan", "Information not provided", "Informatsiya ne ukazana")
-    ensure_content("news.category.all", "Barchasi", "All", "Vse")
-    ensure_content("news.category.school", "Maktab yangiliklari", "School news", "Novosti shkoly")
-    ensure_content("news.category.announcement", "E'lonlar", "Announcements", "Obyavleniya")
-    ensure_content("news.empty.title", "Yangiliklar topilmadi.", "No news found.", "Novosti ne naydeny.")
-    ensure_content("news.detail.back", "Barcha yangiliklar", "All news", "Vse novosti")
-    ensure_content("news.detail.share", "Ulashish", "Share", "Podelitsya")
-    ensure_content("news.detail.copied", "Nusxalandi!", "Copied!", "Skopirovano!")
-    ensure_content("departments.category.all", "Barchasi", "All", "Vse")
-    ensure_content("departments.category.academic", "Akademik bo'limlar", "Academic departments", "Akademicheskiye otdely")
-    ensure_content("departments.category.leadership", "Rahbariyat", "Leadership", "Rukovodstvo")
-    ensure_content("departments.category.support", "Qo'llab-quvvatlash", "Support", "Podderzhka")
-    ensure_content("departments.category.clubs", "To'garaklar", "Clubs", "Kruzhki")
-    ensure_content("departments.empty.title", "Bo'limlar topilmadi.", "No departments found.", "Otdely ne naydeny.")
-    ensure_content("departments.card.more", "Batafsil", "Details", "Podrobnee")
-    ensure_content("departments.detail.about", "Bo'lim haqida ma'lumot", "About the department", "Otdel haqida ma'lumot")
-    ensure_content("departments.detail.subjects", "Maxsus fanlar", "Specialized subjects", "Profilnyye predmety")
-    ensure_content("departments.detail.quality.title", "Ta'lim sifati", "Education quality", "Kachestvo obrazovaniya")
-    ensure_content("departments.detail.contact.title", "Bog'lanish", "Contact", "Kontakty")
-    ensure_content("departments.detail.contact.button", "Savolingiz bormi?", "Have a question?", "Yest vopros?")
-    ensure_content("departments.detail.phone.label", "Telefon", "Phone", "Telefon")
-    ensure_content("departments.detail.email.label", "Pochta", "Email", "Pochta")
-    ensure_content("teachers.category.all", "Barchasi", "All", "Vse")
-    ensure_content("teachers.category.leadership", "Rahbariyat", "Leadership", "Rukovodstvo")
-    ensure_content("teachers.category.science", "Aniq fanlar", "Sciences", "Tochnyye nauki")
-    ensure_content("teachers.category.language", "Tillar", "Languages", "Yazyki")
-    ensure_content("teachers.category.natural", "Tabiiy fanlar", "Natural sciences", "Yestestvennyye nauki")
-    ensure_content("teachers.header.badge", "Pedagogik jamoa", "Teaching team", "Pedagogicheskiy sostav")
-    upsert_content("footer.tagline", "Denov tuman 2-son ixtisoslashtirilgan maktab-internati", "Bright steps to the future. Quality education is the guarantee of a prosperous future.", "Yarkiye shagi v budushcheye. Kachestvennoye obrazovaniye eto garantiya blagopoluchnogo budushchego.")
-    upsert_content("footer.desc", "Denov tuman 2-son ixtisoslashtirilgan maktab-internati", "Bright steps to the future.", "Yarkiye shagi v budushcheye.")
-    ensure_content("footer.links.title", "Sahifalar", "Pages", "Stranitsy")
-    ensure_content("footer.contact.title", "Aloqa", "Contact", "Kontakty")
-    ensure_content("footer.map.title", "Xarita", "Map", "Karta")
-    ensure_content("footer.rights", "Barcha huquqlar himoyalangan.", "All rights reserved.", "Vse prava zashchishcheny.")
-    ensure_content("home.hero.badge", "Rivojlanish va ta'lim markazi", "Center of growth and education", "Tsentr razvitiya i obrazovaniya")
-    ensure_content("home.hero.learn_more", "Batafsil ma'lumot", "Learn more", "Uznat bolshe")
-    ensure_content("home.hero.teachers_btn", "Ustozlar", "Teachers", "Uchitelya")
-    ensure_content("home.stats.teachers", "Malakali ustozlar", "Qualified teachers", "Kvalifitsirovannyye uchitelya")
-    ensure_content("home.stats.announcements", "Muhim e'lonlar", "Important announcements", "Vazhnyye obyavleniya")
-    ensure_content("home.stats.departments", "Faol bo'limlar", "Active departments", "Aktivnyye otdely")
-    ensure_content("home.stats.news", "Yangiliklar", "News", "Novosti")
-    ensure_content("home.latest_news.eyebrow", "Media va yangiliklar", "Media and news", "Media i novosti")
-    ensure_content("home.latest_news.title", "So'nggi yangiliklar", "Latest news", "Posledniye novosti")
-    ensure_content("home.latest_news.all", "Barchasini ko'rish", "View all", "Smotret vse")
-    ensure_content("home.latest_news.more", "Batafsil", "Details", "Podrobnee")
-    ensure_content("home.announcements.title", "Muhim e'lonlar", "Important announcements", "Vazhnyye obyavleniya")
-    ensure_content("home.announcements.subtitle", "O'quvchilar va ota-onalar uchun dolzarb xabarlar", "Current notices for students and parents", "Aktualnyye soobshcheniya dlya uchashchikhsya i roditeley")
-    ensure_content("home.announcements.all", "Barcha e'lonlar", "All announcements", "Vse obyavleniya")
-    ensure_content("home.announcements.badge", "E'lon", "Announcement", "Obyavleniye")
-    ensure_content("home.announcements.more", "Batafsil", "Details", "Podrobnee")
-    ensure_content("home.announcements.empty", "Hozircha e'lonlar yo'q.", "No announcements yet.", "Obyavleniy poka net.")
-    ensure_content("home.departments.title", "Bo'limlar", "Departments", "Otdely")
-    ensure_content("home.departments.subtitle", "Maktabdagi asosiy bo'limlar bilan tanishing", "Explore the main school departments", "Poznakomtes s osnovnymi otdelami shkoly")
-    ensure_content("home.departments.all", "Barcha bo'limlar", "All departments", "Vse otdely")
-    ensure_content("home.departments.more", "Batafsil", "Details", "Podrobnee")
-    ensure_content("home.teachers.cta.title", "Malakali ustozlarimiz bilan tanishing", "Meet our qualified teachers", "Poznakomtes s nashimi kvalifitsirovannymi uchitelyami")
-    ensure_content("home.teachers.cta.description", "Har bir fan bo'yicha tajribali pedagoglar o'quvchilarni qo'llab-quvvatlaydi.", "Experienced teachers support students in every subject.", "Opytnyye uchitelya podderzhivayut uchashchikhsya po kazhdomu predmetu.")
-    ensure_content("home.teachers.cta.button", "Ustozlar ro'yxati", "Teachers list", "Spisok uchiteley")
-    ensure_content("home.contact.cta.title", "Ta'limni biz bilan boshlang", "Start education with us", "Nachnite obrazovaniye s nami")
-    ensure_content("home.contact.cta.description", "Dasturlar va imkoniyatlar haqida ko'proq ma'lumot olish uchun bog'laning.", "Contact us to learn more about our programs and opportunities.", "Svazhites s nami, chtoby uznat bolshe o programmakh i vozmozhnostyakh.")
-    ensure_content("home.contact.cta.button", "Bog'lanish", "Contact us", "Svazatsya")
-    ensure_content("announcements.title", "E'lonlar", "Announcements", "Obyavleniya")
-    ensure_content("announcements.subtitle", "Maktabimizning so'nggi e'lon va xabarlari", "Latest announcements and notices from our school", "Posledniye obyavleniya i soobshcheniya nashchey shkoly")
-    ensure_content("announcements.badge", "Rasmiy xabarlar", "Official notices", "Ofitsialnyye soobshcheniya")
-    ensure_content("announcements.more", "Batafsil o'qish", "Read more", "Chitat dalej")
-    ensure_content("announcements.empty.title", "Hozircha e'lonlar yo'q", "No announcements yet", "Obyavleniy poka net")
-    ensure_content("announcements.empty.description", "Yangi e'lonlar admin panel orqali qo'shiladi", "New announcements will be added from the admin panel", "Novyye obyavleniya budut dobavleny cherez admin panel")
-    ensure_content("teachers.title", "Bizning ustozlar", "Our teachers", "Nashi uchitelya")
-    ensure_content("teachers.subtitle", "Malakali va tajribali pedagoglar jamoasi", "A team of qualified and experienced educators", "Komanda kvalifitsirovannykh i opytnykh pedagogov")
-    ensure_content("teachers.empty.title", "Hozircha ustozlar qo'shilmagan", "No teachers added yet", "Uchitelya poka ne dobavleny")
-    ensure_content("teachers.empty.description", "Admin panel orqali ustozlar ma'lumotini qo'shing", "Add teachers from the admin panel", "Dobavte uchiteley cherez admin panel")
-    ensure_content("teachers.card.subject", "Fan", "Subject", "Predmet")
-    ensure_content("teachers.card.position", "Lavozim", "Position", "Dolzhnost")
-    ensure_content("teachers.card.about", "Ma'lumot", "Information", "Informatsiya")
-    ensure_content("teachers.card.achievements", "Yutuqlar", "Achievements", "Dostizheniya")
-    ensure_content("teachers.card.about_placeholder", "Ustoz haqida ma'lumot kiritilmagan.", "No teacher information entered.", "Informatsiya ob uchitele ne ukazana.")
-    ensure_content("teachers.card.achievements_placeholder", "Yutuqlar kiritilmagan.", "Achievements not entered.", "Dostizheniya ne ukazany.")
-    ensure_content("teachers.card.more", "Batafsil", "Details", "Podrobnee")
-    ensure_content("teacher.detail.about", "Ustoz haqida", "About the teacher", "Ob uchitele")
-    ensure_content("teacher.detail.achievements", "Erishgan yutuqlar", "Achievements", "Dostizheniya")
-    ensure_content("teacher.detail.subject", "O'qitadigan fan", "Subject taught", "Prepodavayemyy predmet")
-    ensure_content("teacher.detail.position", "Lavozimi", "Position", "Dolzhnost")
-    ensure_content("teacher.detail.related", "Boshqa ustozlar", "Other teachers", "Drugiye uchitelya")
-    ensure_content("teacher.detail.back", "Ustozlar ro'yxatiga qaytish", "Back to teachers", "Nazad k spisku uchiteley")
-    ensure_content("contact.title", "Bog'lanish", "Contact", "Kontakty")
-    ensure_content("contact.subtitle", "Biz bilan bog'laning va savollaringizga javob oling.", "Contact us and get answers to your questions.", "Svazhites s nami i poluchite otvety na svoi voprosy.")
-    ensure_content("contact.form.title", "Xabar yuborish", "Send a message", "Otpravit soobshcheniye")
-    ensure_content("contact.form.subtitle", "Savollaringiz bo'lsa, ushbu shaklni to'ldirib yuboring.", "Fill out the form if you have any questions.", "Zapolnite formu, yesli u vas yest voprosy.")
-    upsert_content("contact.form.success.title", "Xabaringiz qabul qilindi!", "Your message has been received!", "Vashe soobshcheniye prinyato!")
-    upsert_content("contact.form.success.description", "Xabaringiz qabul qilindi. Sizga email orqali javob beramiz.", "Your message has been received. We will reply by email.", "Vashe soobshcheniye prinyato. My otvetim vam po email.")
-    ensure_content("contact.form.full_name", "To'liq ismingiz", "Your full name", "Vashe polnoye imya")
-    ensure_content("contact.form.email", "Email manzilingiz", "Your email address", "Vash email")
-    ensure_content("contact.form.message", "Xabar matni...", "Message text...", "Tekst soobshcheniya...")
-    ensure_content("contact.form.submit", "Xabarni yuborish", "Send message", "Otpravit soobshcheniye")
-    ensure_content("contact.card.address.title", "Manzil", "Address", "Adres")
-    ensure_content("contact.card.phone.title", "Telefon raqam", "Phone number", "Nomer telefona")
-    ensure_content("contact.card.phone.schedule", "Dushanba - Shanba: 08:00 - 18:00", "Monday - Saturday: 08:00 - 18:00", "Ponedelnik - Subbota: 08:00 - 18:00")
+    ensure_content("about.mission_vision.title", "Missiyamiz va ko'z qarashimiz", "Our mission and vision", "Наша миссия и взгляд")
+    ensure_content("about.section.label", "Biz haqimizda", "About us", "О нас")
+    ensure_content("about.mission.title", "Missionimiz", "Our mission", "Наша миссия")
+    ensure_content("about.vision.title", "Ko'z qarashimiz", "Our vision", "Наш взгляд")
+    ensure_content("about.mission.description", "Sifatli ta'lim orqali jamiyatga foyda keltirish.", "Serving society through quality education.", "Служение обществу через качественное образование.")
+    ensure_content("about.vision.description", "Raqamli asrda yetakchi kadrlar tayyorlash.", "Preparing leading talents for the digital age.", "Подготовка ведущих кадров для цифровой эпохи.")
+    ensure_content("nav.home", "Bosh sahifa", "Home", "Главная")
+    ensure_content("nav.about", "Maktab haqida", "About", "О школе")
+    ensure_content("nav.news", "Yangiliklar", "News", "Новости")
+    ensure_content("nav.departments", "Bo'limlar", "Departments", "Отделы")
+    ensure_content("nav.contact", "Bog'lanish", "Contact", "Контакты")
+    ensure_content("nav.announcements", "E'lonlar", "Announcements", "Объявления")
+    ensure_content("nav.teachers", "Ustozlar", "Teachers", "Учителя")
+    ensure_content("general.home", "Bosh sahifa", "Home", "Главная")
+    ensure_content("general.details", "Batafsil", "Details", "Подробнее")
+    ensure_content("general.read_more", "Batafsil o'qish", "Read more", "Читать далее")
+    ensure_content("general.detail_page", "Batafsil", "Details", "Подробнее")
+    ensure_content("general.not_available", "Ma'lumot kiritilmagan", "Information not provided", "Информация не указана")
+    ensure_content("news.category.all", "Barchasi", "All", "Все")
+    ensure_content("news.category.school", "Maktab yangiliklari", "School news", "Новости школы")
+    ensure_content("news.category.announcement", "E'lonlar", "Announcements", "Объявления")
+    ensure_content("news.empty.title", "Yangiliklar topilmadi.", "No news found.", "Новости не найдены.")
+    ensure_content("news.detail.back", "Barcha yangiliklar", "All news", "Все новости")
+    ensure_content("news.detail.share", "Ulashish", "Share", "Поделиться")
+    ensure_content("news.detail.copied", "Nusxalandi!", "Copied!", "Скопировано!")
+    ensure_content("departments.category.all", "Barchasi", "All", "Все")
+    ensure_content("departments.category.academic", "Akademik bo'limlar", "Academic departments", "Академические отделы")
+    ensure_content("departments.category.leadership", "Rahbariyat", "Leadership", "Руководство")
+    ensure_content("departments.category.support", "Qo'llab-quvvatlash", "Support", "Поддержка")
+    ensure_content("departments.category.clubs", "To'garaklar", "Clubs", "Кружки")
+    ensure_content("departments.empty.title", "Bo'limlar topilmadi.", "No departments found.", "Отделы не найдены.")
+    ensure_content("departments.card.more", "Batafsil", "Details", "Подробнее")
+    ensure_content("departments.detail.about", "Bo'lim haqida ma'lumot", "About the department", "Информация об отделе")
+    ensure_content("departments.detail.subjects", "Maxsus fanlar", "Specialized subjects", "Профильные предметы")
+    ensure_content("departments.detail.quality.title", "Ta'lim sifati", "Education quality", "Качество образования")
+    ensure_content("departments.detail.contact.title", "Bog'lanish", "Contact", "Контакты")
+    ensure_content("departments.detail.contact.button", "Savolingiz bormi?", "Have a question?", "Есть вопрос?")
+    ensure_content("departments.detail.phone.label", "Telefon", "Phone", "Телефон")
+    ensure_content("departments.detail.email.label", "Pochta", "Email", "Почта")
+    ensure_content("teachers.category.all", "Barchasi", "All", "Все")
+    ensure_content("teachers.category.leadership", "Rahbariyat", "Leadership", "Руководство")
+    ensure_content("teachers.category.science", "Aniq fanlar", "Sciences", "Точные науки")
+    ensure_content("teachers.category.language", "Tillar", "Languages", "Языки")
+    ensure_content("teachers.category.natural", "Tabiiy fanlar", "Natural sciences", "Естественные науки")
+    ensure_content("teachers.header.badge", "Pedagogik jamoa", "Teaching team", "Педагогический состав")
+    upsert_content("footer.tagline", "Denov tuman 2-son ixtisoslashtirilgan maktab-internati", "Bright steps to the future. Quality education is the guarantee of a prosperous future.", "Деновская специализированная школа-интернат №2")
+    upsert_content("footer.desc", "Denov tuman 2-son ixtisoslashtirilgan maktab-internati", "Bright steps to the future.", "Деновская специализированная школа-интернат №2")
+    ensure_content("footer.links.title", "Sahifalar", "Pages", "Страницы")
+    ensure_content("footer.contact.title", "Aloqa", "Contact", "Контакты")
+    ensure_content("footer.map.title", "Xarita", "Map", "Карта")
+    ensure_content("footer.rights", "Barcha huquqlar himoyalangan.", "All rights reserved.", "Все права защищены.")
+    ensure_content("home.hero.badge", "Rivojlanish va ta'lim markazi", "Center of growth and education", "Центр развития и образования")
+    ensure_content("home.hero.learn_more", "Batafsil ma'lumot", "Learn more", "Узнать больше")
+    ensure_content("home.hero.teachers_btn", "Ustozlar", "Teachers", "Учителя")
+    ensure_content("home.stats.teachers", "Malakali ustozlar", "Qualified teachers", "Квалифицированные учителя")
+    ensure_content("home.stats.announcements", "Muhim e'lonlar", "Important announcements", "Важные объявления")
+    ensure_content("home.stats.departments", "Faol bo'limlar", "Active departments", "Активные отделы")
+    ensure_content("home.stats.news", "Yangiliklar", "News", "Новости")
+    ensure_content("home.latest_news.eyebrow", "Media va yangiliklar", "Media and news", "Медиа и новости")
+    ensure_content("home.latest_news.title", "So'nggi yangiliklar", "Latest news", "Последние новости")
+    ensure_content("home.latest_news.all", "Barchasini ko'rish", "View all", "Смотреть все")
+    ensure_content("home.latest_news.more", "Batafsil", "Details", "Подробнее")
+    ensure_content("home.announcements.title", "Muhim e'lonlar", "Important announcements", "Важные объявления")
+    ensure_content("home.announcements.subtitle", "O'quvchilar va ota-onalar uchun dolzarb xabarlar", "Current notices for students and parents", "Актуальные сообщения для учащихся и родителей")
+    ensure_content("home.announcements.all", "Barcha e'lonlar", "All announcements", "Все объявления")
+    ensure_content("home.announcements.badge", "E'lon", "Announcement", "Объявление")
+    ensure_content("home.announcements.more", "Batafsil", "Details", "Подробнее")
+    ensure_content("home.announcements.empty", "Hozircha e'lonlar yo'q.", "No announcements yet.", "Объявлений пока нет.")
+    ensure_content("home.departments.title", "Bo'limlar", "Departments", "Отделы")
+    ensure_content("home.departments.subtitle", "Maktabdagi asosiy bo'limlar bilan tanishing", "Explore the main school departments", "Познакомьтесь с основными отделами школы")
+    ensure_content("home.departments.all", "Barcha bo'limlar", "All departments", "Все отделы")
+    ensure_content("home.departments.more", "Batafsil", "Details", "Подробнее")
+    ensure_content("home.teachers.cta.title", "Malakali ustozlarimiz bilan tanishing", "Meet our qualified teachers", "Познакомьтесь с нашими квалифицированными учителями")
+    ensure_content("home.teachers.cta.description", "Har bir fan bo'yicha tajribali pedagoglar o'quvchilarni qo'llab-quvvatlaydi.", "Experienced teachers support students in every subject.", "Опытные учителя поддерживают учащихся по каждому предмету.")
+    ensure_content("home.teachers.cta.button", "Ustozlar ro'yxati", "Teachers list", "Список учителей")
+    ensure_content("home.contact.cta.title", "Ta'limni biz bilan boshlang", "Start education with us", "Начните обучение вместе с нами")
+    ensure_content("home.contact.cta.description", "Dasturlar va imkoniyatlar haqida ko'proq ma'lumot olish uchun bog'laning.", "Contact us to learn more about our programs and opportunities.", "Свяжитесь с нами, чтобы узнать больше о программах и возможностях.")
+    ensure_content("home.contact.cta.button", "Bog'lanish", "Contact us", "Связаться")
+    ensure_content("announcements.title", "E'lonlar", "Announcements", "Объявления")
+    ensure_content("announcements.subtitle", "Maktabimizning so'nggi e'lon va xabarlari", "Latest announcements and notices from our school", "Последние объявления и сообщения нашей школы")
+    ensure_content("announcements.badge", "Rasmiy xabarlar", "Official notices", "Официальные сообщения")
+    ensure_content("announcements.more", "Batafsil o'qish", "Read more", "Читать далее")
+    ensure_content("announcements.empty.title", "Hozircha e'lonlar yo'q", "No announcements yet", "Объявлений пока нет")
+    ensure_content("announcements.empty.description", "Yangi e'lonlar admin panel orqali qo'shiladi", "New announcements will be added from the admin panel", "Новые объявления будут добавлены через админ-панель")
+    ensure_content("teachers.title", "Bizning ustozlar", "Our teachers", "Наши учителя")
+    ensure_content("teachers.subtitle", "Malakali va tajribali pedagoglar jamoasi", "A team of qualified and experienced educators", "Команда квалифицированных и опытных педагогов")
+    ensure_content("teachers.empty.title", "Hozircha ustozlar qo'shilmagan", "No teachers added yet", "Учителя пока не добавлены")
+    ensure_content("teachers.empty.description", "Admin panel orqali ustozlar ma'lumotini qo'shing", "Add teachers from the admin panel", "Добавьте учителей через админ-панель")
+    ensure_content("teachers.card.subject", "Fan", "Subject", "Предмет")
+    ensure_content("teachers.card.position", "Lavozim", "Position", "Должность")
+    ensure_content("teachers.card.about", "Ma'lumot", "Information", "Информация")
+    ensure_content("teachers.card.achievements", "Yutuqlar", "Achievements", "Достижения")
+    ensure_content("teachers.card.about_placeholder", "Ustoz haqida ma'lumot kiritilmagan.", "No teacher information entered.", "Информация об учителе не указана.")
+    ensure_content("teachers.card.achievements_placeholder", "Yutuqlar kiritilmagan.", "Achievements not entered.", "Достижения не указаны.")
+    ensure_content("teachers.card.more", "Batafsil", "Details", "Подробнее")
+    ensure_content("teacher.detail.about", "Ustoz haqida", "About the teacher", "Об учителе")
+    ensure_content("teacher.detail.achievements", "Erishgan yutuqlar", "Achievements", "Достижения")
+    ensure_content("teacher.detail.subject", "O'qitadigan fan", "Subject taught", "Преподаваемый предмет")
+    ensure_content("teacher.detail.position", "Lavozimi", "Position", "Должность")
+    ensure_content("teacher.detail.related", "Boshqa ustozlar", "Other teachers", "Другие учителя")
+    ensure_content("teacher.detail.back", "Ustozlar ro'yxatiga qaytish", "Back to teachers", "Назад к списку учителей")
+    ensure_content("contact.title", "Bog'lanish", "Contact", "Контакты")
+    ensure_content("contact.subtitle", "Biz bilan bog'laning va savollaringizga javob oling.", "Contact us and get answers to your questions.", "Свяжитесь с нами и получите ответы на свои вопросы.")
+    ensure_content("contact.form.title", "Xabar yuborish", "Send a message", "Отправить сообщение")
+    ensure_content("contact.form.subtitle", "Savollaringiz bo'lsa, ushbu shaklni to'ldirib yuboring.", "Fill out the form if you have any questions.", "Заполните форму, если у вас есть вопросы.")
+    upsert_content("contact.form.success.title", "Xabaringiz qabul qilindi!", "Your message has been received!", "Ваше сообщение получено!")
+    upsert_content("contact.form.success.description", "Xabaringiz qabul qilindi. Sizga email orqali javob beramiz.", "Your message has been received. We will reply by email.", "Ваше сообщение получено. Мы ответим вам по электронной почте.")
+    ensure_content("contact.form.full_name", "To'liq ismingiz", "Your full name", "Ваше полное имя")
+    ensure_content("contact.form.email", "Email manzilingiz", "Your email address", "Ваш email")
+    ensure_content("contact.form.message", "Xabar matni...", "Message text...", "Текст сообщения...")
+    ensure_content("contact.form.submit", "Xabarni yuborish", "Send message", "Отправить сообщение")
+    ensure_content("contact.card.address.title", "Manzil", "Address", "Адрес")
+    ensure_content("contact.card.phone.title", "Telefon raqam", "Phone number", "Номер телефона")
+    ensure_content("contact.card.phone.schedule", "Dushanba - Shanba: 08:00 - 18:00", "Monday - Saturday: 08:00 - 18:00", "Понедельник - Суббота: 08:00 - 18:00")
     ensure_content("contact.card.email.title", "Elektron pochta", "Email", "Elektronnaya pochta")
     ensure_content("dept.detail.sidebar.quality.percent", "95", "95", "95")
     ensure_content("dept.detail.sidebar.phone.value", "+998-76-228-25-64", "+998-76-228-25-64", "+998-76-228-25-64")
     ensure_content("dept.detail.sidebar.email.value", "info@denov2sonimi.uz", "info@denov2sonimi.uz", "info@denov2sonimi.uz")
-    ensure_content("news.detail.contact.address.value", "Denov shahar, Surxandaryo viloyati", "Denov city, Surxandarya region", "Denov, Surxandarya")
+    ensure_content("news.detail.contact.address.value", "Denov shahar, Surxandaryo viloyati", "Denov city, Surxandarya region", "Денов, Сурхандарьинская область")
     ensure_content("news.detail.contact.phone.value", "+998-76-228-25-64", "+998-76-228-25-64", "+998-76-228-25-64")
     ensure_content("news.detail.contact.email.value", "info@denov2sonimi.uz", "info@denov2sonimi.uz", "info@denov2sonimi.uz")
     ensure_content("contact.card.email.value", "info@denov2sonimi.uz", "info@denov2sonimi.uz", "info@denov2sonimi.uz")
@@ -418,5 +436,50 @@ def init_db(db: Session):
     else:
         for item in db.query(News).filter(News.category_key == "agency").all():
             item.category_key = "announcement"
+
+    for field_name in (
+        "school_name_ru",
+        "nav_home_ru",
+        "nav_about_ru",
+        "nav_news_ru",
+        "nav_departments_ru",
+        "nav_contact_ru",
+        "hero_title_ru",
+        "hero_subtitle_ru",
+        "about_title_ru",
+        "about_description_ru",
+        "footer_address_ru",
+        "contact_hours_ru",
+    ):
+        current_value = getattr(settings, field_name, None)
+        normalized_value = normalize_russian_text(current_value)
+        if normalized_value != current_value:
+            setattr(settings, field_name, normalized_value)
+
+    for item in db.query(ContentItem).all():
+        normalized_value = normalize_russian_text(item.value_ru)
+        if normalized_value != item.value_ru:
+            item.value_ru = normalized_value
+
+    for department in db.query(Department).all():
+        for field_name in ("name_ru", "description_ru", "subjects_ru"):
+            current_value = getattr(department, field_name, None)
+            normalized_value = normalize_russian_text(current_value)
+            if normalized_value != current_value:
+                setattr(department, field_name, normalized_value)
+
+    for teacher in db.query(Teacher).all():
+        for field_name in ("position_ru", "subject_ru", "bio_ru", "achievements_ru"):
+            current_value = getattr(teacher, field_name, None)
+            normalized_value = normalize_russian_text(current_value)
+            if normalized_value != current_value:
+                setattr(teacher, field_name, normalized_value)
+
+    for item in db.query(News).all():
+        for field_name in ("title_ru", "content_ru"):
+            current_value = getattr(item, field_name, None)
+            normalized_value = normalize_russian_text(current_value)
+            if normalized_value != current_value:
+                setattr(item, field_name, normalized_value)
 
     db.commit()

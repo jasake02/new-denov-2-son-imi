@@ -135,8 +135,8 @@ TEMPLATE_BUNDLE = {'admin/base.html': '<!DOCTYPE html>\n'
                               '            </div>\n'
                               '            <div class="card-body p-4">\n'
                               '                <div class="alert alert-info">\n'
-                              '                    `Custom CSS` va kodga tegadigan joylarni saqlash uchun shu maxsus '
-                              "so'z ishlatiladi.\n"
+                              '                    <code>Custom CSS</code> va kodga tegadigan joylarni saqlash uchun '
+                              "shu maxsus so'z ishlatiladi.\n"
                               '                </div>\n'
                               '                <form action="/admin/account/changecodephrase" method="post">\n'
                               '                    <div class="mb-3">\n'
@@ -1259,8 +1259,8 @@ TEMPLATE_BUNDLE = {'admin/base.html': '<!DOCTYPE html>\n'
                         '                </div>\n'
                         '                <div class="col-12">\n'
                         '                    <div class="alert alert-info mb-0">\n'
-                        "                        `E'lonlar`, `Ustozlar` va boshqa umumiy matnlar `Sayt matnlari` "
-                        "bo'limidan 3 tilda tahrirlanadi.\n"
+                        "                        <code>E'lonlar</code>, <code>Ustozlar</code> va boshqa umumiy matnlar "
+                        "<code>Sayt matnlari</code> bo'limidan 3 tilda tahrirlanadi.\n"
                         '                    </div>\n'
                         '                </div>\n'
                         '            </div>\n'
