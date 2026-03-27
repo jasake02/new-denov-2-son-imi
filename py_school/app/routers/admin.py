@@ -554,39 +554,22 @@ def change_pwd_post(
     admin_id: int = Depends(require_admin),
     db: Session = Depends(get_db),
     old_password: str = Form(...),
+    code_phrase: str = Form(...),
     new_password: str = Form(...),
 ):
     user = db.query(AdminUser).filter(AdminUser.id == admin_id).first()
     if not user or not verify_password(old_password, user.password_hash):
         return redirect("/admin/account/changepassword?error=Eski parol noto'g'ri")
 
+    if not can_edit_code(user, code_phrase):
+        return redirect("/admin/account/changepassword?error=Maxsus so'z noto'g'ri")
+
+    if len(new_password.strip()) < 8:
+        return redirect("/admin/account/changepassword?error=Yangi parol kamida 8 ta belgidan iborat bo'lsin")
+
     user.password_hash = get_password_hash(new_password)
     commit_with_retry(db)
     return redirect("/admin/account/changepassword?success=Parol muvaffaqiyatli o'zgartirildi")
-
-
-@router.post("/account/changecodephrase")
-def change_code_phrase_post(
-    request: Request,
-    admin_id: int = Depends(require_admin),
-    db: Session = Depends(get_db),
-    password: str = Form(...),
-    new_code_phrase: str = Form(...),
-    confirm_code_phrase: str = Form(...),
-):
-    user = db.query(AdminUser).filter(AdminUser.id == admin_id).first()
-    if not user or not verify_password(password, user.password_hash):
-        return redirect("/admin/account/changepassword?error=Maxsus so'zni o'zgartirish uchun amaldagi parol noto'g'ri")
-
-    if normalize_text(new_code_phrase) is None or len(new_code_phrase.strip()) < 6:
-        return redirect("/admin/account/changepassword?error=Maxsus so'z kamida 6 ta belgidan iborat bo'lsin")
-
-    if new_code_phrase != confirm_code_phrase:
-        return redirect("/admin/account/changepassword?error=Maxsus so'z tasdiqlash bilan mos kelmadi")
-
-    user.secret_word_hash = get_password_hash(new_code_phrase.strip())
-    commit_with_retry(db)
-    return redirect("/admin/account/changepassword?success=Maxsus so'z muvaffaqiyatli yangilandi")
 
 
 @router.get("/messages", response_class=HTMLResponse)
